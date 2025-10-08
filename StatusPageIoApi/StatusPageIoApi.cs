@@ -5,9 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace SergiyE.StatusPageIoApi {
   public class StatusPageIoApi {
@@ -25,11 +28,15 @@ namespace SergiyE.StatusPageIoApi {
 
     protected JsonSerializerSettings JsonSerializerSettings => settings.Value;
 
-    public bool ReadResponseAsString { get; set; }
-
-    private JsonSerializerSettings CreateSerializerSettings() {
-      var settings = new JsonSerializerSettings();
-      return settings;
+    private static JsonSerializerSettings CreateSerializerSettings() {
+      var jsonSettings = new JsonSerializerSettings {
+        NullValueHandling = NullValueHandling.Ignore,
+        ContractResolver = new CamelCasePropertyNamesContractResolver {
+          NamingStrategy = new SnakeCaseNamingStrategy()
+        }
+      };
+      jsonSettings.Converters.Add(new StringEnumConverter());
+      return jsonSettings;
     }
 
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -41,7 +48,7 @@ namespace SergiyE.StatusPageIoApi {
     /// </remarks>
     /// <returns>Get a list of pages</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Page>> GetPages(CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<Page>> GetPages(CancellationToken cancellationToken = default(CancellationToken)) {
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/pages");
 
@@ -56,7 +63,6 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
           var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
           foreach (var item in response.Content.Headers)
@@ -65,7 +71,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Page>>(response,
+              await ReadObjectResponseAsync<IEnumerable<Page>>(response,
                 headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -87,17 +93,14 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -109,11 +112,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a page
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Update a page</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Page> PatchPages(string pageId, PatchPages body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -142,14 +145,10 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
@@ -224,17 +223,14 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -246,11 +242,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a page
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Update a page</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Page> PutPages(string pageId, PutPages body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -279,14 +275,11 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
@@ -361,17 +354,14 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -383,11 +373,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a page
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Get a page</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Page> GetPages(string pageId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -408,14 +398,11 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
@@ -478,17 +465,14 @@ namespace SergiyE.StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -500,11 +484,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add a page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Add a page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PostPageAccessUsers(
-      string pageId, PostPagesPageIdPageAccessUsers body, CancellationToken cancellationToken) {
+      string pageId, PostPagesPageIdPageAccessUsers body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -534,14 +518,11 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
@@ -629,17 +610,14 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -651,15 +629,15 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of page access users
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="email">Email address to search for</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
+    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of page access users</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<PageAccessUser>>
+    public virtual async Task<IEnumerable<PageAccessUser>>
       GetPageAccessUsers(string pageId, string email, int? page, int? perPage,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -704,15 +682,13 @@ namespace SergiyE.StatusPageIoApi {
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<PageAccessUser>>(
+              await ReadObjectResponseAsync<IEnumerable<PageAccessUser>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -758,9 +734,7 @@ namespace SergiyE.StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -780,13 +754,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Update page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PatchPageAccessUser(string pageId, string pageAccessUserId,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -816,75 +790,43 @@ namespace SergiyE.StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content != null && response.Content.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int)response.StatusCode;
           if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
+            var objectResponse = await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken).ConfigureAwait(false);
+            return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
           }
           else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
+            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken).ConfigureAwait(false);
+            if (objectResponse.Object == null)
+              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
 
             throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
               headers, objectResponse.Object, null);
           }
           else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
+            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken).ConfigureAwait(false);
+            if (objectResponse.Object == null)
+              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
+            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken).ConfigureAwait(false);
+            if (objectResponse.Object == null)
+              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
+            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
         finally {
-          if (disposeResponse)
-            response.Dispose();
+          response.Dispose();
         }
       }
     }
@@ -896,13 +838,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Update page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PutPageAccessUser(string pageId, string pageAccessUserId,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1012,12 +954,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Delete page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task DeletePageAccessUser(
-      string pageId, string pageAccessUserId, CancellationToken cancellationToken) {
+      string pageId, string pageAccessUserId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1115,13 +1057,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Get page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser>
-      GetPageAccessUser(string pageId, string pageAccessUserId,
-        CancellationToken cancellationToken) {
+    public virtual async Task<PageAccessUser> GetPageAccessUser(string pageId, string pageAccessUserId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1229,14 +1169,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add components for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Add components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser>
-      PatchPageAccessUserComponents(string pageId, string pageAccessUserId,
-        PatchPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
-        CancellationToken cancellationToken) {
+    public virtual async Task<PageAccessUser> PatchPageAccessUserComponents(string pageId, string pageAccessUserId, PatchPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1352,14 +1290,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add components for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Add components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser>
-      PutPageAccessUserComponents(string pageId, string pageAccessUserId,
-        PutPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
-        CancellationToken cancellationToken) {
+    public virtual async Task<PageAccessUser> PutPageAccessUserComponents(string pageId, string pageAccessUserId, PutPagesPageIdPageAccessUsersPageAccessUserIdComponents body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1476,14 +1411,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Replace components for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Replace components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PostPageAccessUserComponents(string pageId, string pageAccessUserId,
         PostPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1600,14 +1535,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Remove components for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="page_access_user_id">Page Access User Identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessUserId">Page Access User Identifier</param>
     /// <returns>Remove components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       DeletePageAccessUserComponents(string pageId, string pageAccessUserId,
         DeletePagesPageIdPageAccessUsersPageAccessUserIdComponents body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1724,15 +1659,15 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get components for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Component>>
+    public virtual async Task<IEnumerable<Component>>
       GetPageAccessUserComponents(string pageId, string pageAccessUserId,
-        int? page, int? perPage, CancellationToken cancellationToken) {
+        int? page, int? perPage, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1785,7 +1720,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Component>>(
+              await ReadObjectResponseAsync<IEnumerable<Component>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1854,14 +1789,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Remove component for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <param name="component_id">Component identifier</param>
     /// <returns>Remove component for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       DeletePageAccessUserComponent(string pageId,
-        string pageAccessUserId, string componentId, CancellationToken cancellationToken) {
+        string pageAccessUserId, string componentId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1976,14 +1911,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add metrics for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <returns>Add metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PatchPageAccessUserMetrics(string pageId, string pageAccessUserId,
         PatchPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2100,14 +2035,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add metrics for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <returns>Add metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PutPageAccessUserMetrics(string pageId, string pageAccessUserId,
         PutPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2224,14 +2159,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Replace metrics for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <returns>Replace metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PostPageAccessUserMetrics(string pageId, string pageAccessUserId,
         PostPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2348,14 +2283,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete metrics for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <returns>Delete metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       DeletePageAccessUserMetrics(string pageId, string pageAccessUserId,
         DeletePagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2472,15 +2407,15 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get metrics for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Metric>>
+    public virtual async Task<IEnumerable<Metric>>
       GetPageAccessUserMetrics(string pageId, string pageAccessUserId, int? page, int? perPage,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2533,7 +2468,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Metric>>(response,
+              await ReadObjectResponseAsync<IEnumerable<Metric>>(response,
                 headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -2602,7 +2537,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete metric for page access user
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_user_id">Page Access User Identifier</param>
     /// <param name="metric_id">Identifier of metric requested</param>
     /// <returns>Delete metric for page access user</returns>
@@ -2610,7 +2545,7 @@ namespace SergiyE.StatusPageIoApi {
     public virtual async Task<PageAccessUser>
       DeletePageAccessUserMetric(string pageId,
         string pageAccessUserId,
-        string metricId, CancellationToken cancellationToken) {
+        string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2689,13 +2624,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of page access groups
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of page access groups</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<PageAccessGroup>>
-      GetPageAccessGroups(string pageId, int? page, int? perPage, CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<PageAccessGroup>>
+      GetPageAccessGroups(string pageId, int? page, int? perPage, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2742,7 +2677,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<PageAccessGroup>>(
+              await ReadObjectResponseAsync<IEnumerable<PageAccessGroup>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -2811,11 +2746,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PostPageAccessGroups(string pageId, PostPagesPageIdPageAccessGroups body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -2950,12 +2885,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Get a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> GetPageAccessGroup(string pageId, string pageAccessGroupId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3064,13 +2999,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Update a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup>
       PatchPageAccessGroup(string pageId, string pageAccessGroupId, PatchPagesPageIdPageAccessGroups body,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3187,12 +3122,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Update a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PutPageAccessGroup(string pageId, string pageAccessGroupId,
-      PutPagesPageIdPageAccessGroups body, CancellationToken cancellationToken) {
+      PutPagesPageIdPageAccessGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3308,12 +3243,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Remove a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Remove a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> DeletePageAccessGroup(string pageId, string pageAccessGroupId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3421,12 +3356,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add components to page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Add components to page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PatchPageAccessGroupComponents(string pageId, string pageAccessGroupId,
-      PatchPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body, CancellationToken cancellationToken) {
+      PatchPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3543,13 +3478,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add components to page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Add components to page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PutPageAccessGroupComponents(string pageId, string pageAccessGroupId,
       PutPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3666,13 +3601,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Replace components for a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Replace components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PostPageAccessGroupComponents(string pageId, string pageAccessGroupId,
       PostPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3789,13 +3724,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete components for a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <returns>Delete components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> DeletePageAccessGroupComponents(string pageId,
       string pageAccessGroupId, DeletePagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3912,15 +3847,15 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// List components for a page access group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page_access_group_id">Page Access Group Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>List components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Component>> GetPageAccessGroupComponents(string pageId,
+    public virtual async Task<IEnumerable<Component>> GetPageAccessGroupComponents(string pageId,
       string pageAccessGroupId,
-      int? page, int? perPage, CancellationToken cancellationToken) {
+      int? page, int? perPage, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -3970,7 +3905,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Component>>(
+              await ReadObjectResponseAsync<IEnumerable<Component>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -4043,7 +3978,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> DeletePageAccessGroupComponent(string pageId, string pageAccessGroupId,
       string componentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4158,12 +4093,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Resend confirmations to a list of subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Resend confirmations to a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostSubscribersResendConfirmation(string pageId,
       PostPagesPageIdSubscribersResendConfirmation body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4276,11 +4211,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Unsubscribe a list of subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Unsubscribe a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostSubscribersUnsubscribe(string pageId, PostPagesPageIdSubscribersUnsubscribe body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4393,11 +4328,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Reactivate a list of quarantined subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Reactivate a list of quarantined subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostSubscribersReactivate(string pageId, PostPagesPageIdSubscribersReactivate body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4510,11 +4445,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a histogram of subscribers by type and then state
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Get a histogram of subscribers by type and then state</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<SubscriberCountByTypeAndState> GetSubscribersHistogramByState(string pageId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4617,13 +4552,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a count of subscribers by type
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="type">If this is present, only count subscribers of this type.</param>
     /// <param name="state">If this is present, only count subscribers in this state. Specify state "all" to count subscribers in any states.</param>
     /// <returns>Get a count of subscribers by type</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<SubscriberCountByType> GetSubscribersCount(string pageId, Type? type, State? state,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4739,14 +4674,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of unsubscribed subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of unsubscribed subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Subscriber>> GetSubscribersUnsubscribed(string pageId, int? page,
+    public virtual async Task<IEnumerable<Subscriber>> GetSubscribersUnsubscribed(string pageId, int? page,
       int? perPage,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4793,7 +4728,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Subscriber>>(
+              await ReadObjectResponseAsync<IEnumerable<Subscriber>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -4850,11 +4785,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a subscriber. Not applicable for Slack subscribers.
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create a subscriber. Not applicable for Slack subscribers.</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PostSubscribers(string pageId, PostPagesPageIdSubscribers body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -4988,7 +4923,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="q">If this is specified, search the contact information (email, endpoint, or phone number) for the provided value. This parameter doesn’t support searching for Slack subscribers.</param>
     /// <param name="type">If specified, only return subscribers of the indicated type.</param>
     /// <param name="state">If this is present, only return subscribers in this state. Specify state "all" to find subscribers in any states.</param>
@@ -4998,10 +4933,10 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="sort_direction">The sort direction of the listing.</param>
     /// <returns>Get a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Subscriber>> GetSubscribers(string pageId, string q, Type? type, State? state,
+    public virtual async Task<IEnumerable<Subscriber>> GetSubscribers(string pageId, string q, Type? type, State? state,
       int? limit, int? page,
       SortField? sortField, SortDirection? sortDirection,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5077,7 +5012,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Subscriber>>(
+              await ReadObjectResponseAsync<IEnumerable<Subscriber>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -5170,12 +5105,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Resend confirmation to a subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Resend confirmation to a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostSubscriberResendConfirmation(string pageId, string subscriberId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5264,14 +5199,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Unsubscribe a subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <param name="skip_unsubscription_notification">If skip_unsubscription_notification is true, the subscriber does not receive any notifications when they are unsubscribed.</param>
     /// <returns>Unsubscribe a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> DeleteSubscriber(string pageId, string subscriberId,
       bool? skipUnsubscriptionNotification,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5375,13 +5310,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Update a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PatchSubscriber(string pageId, string subscriberId,
       PatchPagesPageIdSubscribers body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5496,7 +5431,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Get a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -5512,12 +5447,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Get a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> GetSubscriber(string pageId, string subscriberId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5614,12 +5549,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a template
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create a template</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentTemplate> PostIncidentTemplates(string pageId,
       PostPagesPageIdIncidentTemplates body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5742,14 +5677,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of templates
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <param name="per_page">Number of results to return per page.</param>
     /// <returns>Get a list of templates</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<IncidentTemplate>> GetIncidentTemplates(string pageId, int? page,
+    public virtual async Task<IEnumerable<IncidentTemplate>> GetIncidentTemplates(string pageId, int? page,
       int? perPage,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5795,7 +5730,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<IncidentTemplate>>(
+              await ReadObjectResponseAsync<IEnumerable<IncidentTemplate>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -5840,11 +5775,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create an incident
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Incident> PostIncidents(string pageId, PostPagesPageIdIncidents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -5966,14 +5901,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of incidents
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="q">If this is specified, search for the text query string in the incidents' name, status, postmortem_body, and incident_updates fields.</param>
     /// <param name="limit">The maximum number of rows to return per page. The default and maximum limit is 100.</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <returns>Get a list of incidents</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Incident>> GetIncidents(string pageId, string q, int? limit, int? page,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<Incident>> GetIncidents(string pageId, string q, int? limit, int? page,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6025,7 +5960,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Incident>>(
+              await ReadObjectResponseAsync<IEnumerable<Incident>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -6094,14 +6029,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of active maintenances
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <param name="per_page">Number of results to return per page.</param>
     /// <returns>Get a list of active maintenances</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Incident>> GetIncidentsActiveMaintenance(string pageId, int? page,
+    public virtual async Task<IEnumerable<Incident>> GetIncidentsActiveMaintenance(string pageId, int? page,
       int? perPage,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6148,7 +6083,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Incident>>(
+              await ReadObjectResponseAsync<IEnumerable<Incident>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -6205,13 +6140,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of upcoming incidents
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <param name="per_page">Number of results to return per page.</param>
     /// <returns>Get a list of upcoming incidents</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Incident>> GetIncidentsUpcoming(string pageId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<Incident>> GetIncidentsUpcoming(string pageId, int? page, int? perPage,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6258,7 +6193,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Incident>>(
+              await ReadObjectResponseAsync<IEnumerable<Incident>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -6315,13 +6250,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of scheduled incidents
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <param name="per_page">Number of results to return per page.</param>
     /// <returns>Get a list of scheduled incidents</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Incident>> GetIncidentsScheduled(string pageId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<Incident>> GetIncidentsScheduled(string pageId, int? page, int? perPage,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6368,7 +6303,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Incident>>(
+              await ReadObjectResponseAsync<IEnumerable<Incident>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -6425,13 +6360,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of unresolved incidents
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch.</param>
     /// <param name="per_page">Number of results to return per page.</param>
     /// <returns>Get a list of unresolved incidents</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Incident>> GetIncidentsUnresolved(string pageId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<Incident>> GetIncidentsUnresolved(string pageId, int? page, int? perPage,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6478,7 +6413,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<ICollection<Incident>>(
+              await ReadObjectResponseAsync<IEnumerable<Incident>>(
                 response, headers, cancellationToken).ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -6535,12 +6470,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete an incident
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Delete an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Incident> DeleteIncident(string pageId, string incidentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6613,12 +6548,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update an incident
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Update an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Incident> PatchIncident(string pageId, string incidentId, PatchPagesPageIdIncidents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6697,12 +6632,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update an incident
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Update an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Incident> PutIncident(string pageId, string incidentId, PutPagesPageIdIncidents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6779,12 +6714,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get an incident
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Get an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Incident> GetIncident(string pageId, string incidentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6855,14 +6790,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a previous incident update
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="incident_update_id">Incident Update Identifier</param>
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PatchIncidentUpdate(string pageId, string incidentId,
       string incidentUpdateId, PatchPagesPageIdIncidentsIncidentIdIncidentUpdates body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -6943,14 +6878,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a previous incident update
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="incident_update_id">Incident Update Identifier</param>
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PutIncidentUpdate(string pageId, string incidentId,
       string incidentUpdateId, PutPagesPageIdIncidentsIncidentIdIncidentUpdates body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7028,13 +6963,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create an incident subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Create an incident subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PostIncidentSubscribers(string pageId, string incidentId,
       PostPagesPageIdIncidentsIncidentIdSubscribers body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7124,16 +7059,16 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of incident subscribers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of incident subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Subscriber>> GetIncidentSubscribers(string pageId, string incidentId,
+    public virtual async Task<IEnumerable<Subscriber>> GetIncidentSubscribers(string pageId, string incidentId,
       int? page,
       int? perPage,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7182,7 +7117,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int)response.StatusCode;
           switch (status) {
             case 200: {
-              var objectResponse = await ReadObjectResponseAsync<ICollection<Subscriber>>(response, headers, cancellationToken).ConfigureAwait(false);
+              var objectResponse = await ReadObjectResponseAsync<IEnumerable<Subscriber>>(response, headers, cancellationToken).ConfigureAwait(false);
               return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
             }
             case 401: {
@@ -7217,13 +7152,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Unsubscribe an incident subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Unsubscribe an incident subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> DeleteIncidentSubscriber(string pageId, string incidentId,
-      string subscriberId, CancellationToken cancellationToken) {
+      string subscriberId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7283,13 +7218,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get an incident subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Get an incident subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> GetIncidentSubscriber(string pageId, string incidentId,
-      string subscriberId, CancellationToken cancellationToken) {
+      string subscriberId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7351,13 +7286,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Resend confirmation to an incident subscriber
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <param name="subscriber_id">Subscriber Identifier</param>
     /// <returns>Resend confirmation to an incident subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostIncidentSubscriberResendConfirmation(string pageId, string incidentId,
-      string subscriberId, CancellationToken cancellationToken) {
+      string subscriberId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7413,12 +7348,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get Postmortem
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Get Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> GetIncidentPostmortem(string pageId, string incidentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7485,13 +7420,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create Postmortem
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Create Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> PutIncidentPostmortem(
       string pageId, string incidentId, PutPagesPageIdIncidentsIncidentIdPostmortem body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7568,12 +7503,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete Postmortem
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Delete Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task DeleteIncidentPostmortem(
-      string pageId, string incidentId, CancellationToken cancellationToken) {
+      string pageId, string incidentId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7637,13 +7572,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Publish Postmortem
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Publish Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> PutIncidentPostmortemPublish(string pageId, string incidentId,
       PutPagesPageIdIncidentsIncidentIdPostmortemPublish body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7725,12 +7660,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Revert Postmortem
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="incident_id">Incident Identifier</param>
     /// <returns>Revert Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> PutIncidentPostmortemRevert(string pageId, string incidentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7808,7 +7743,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Create a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PostComponents(string pageId, PostPagesPageIdComponents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -7878,21 +7813,19 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of components
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
+    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of components</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<Component>> GetPagesComponents(string pageId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<Component[]> GetPagesComponents(string pageId, int? page = null, int? perPage = null,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/pages/{page_id}/components?");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_id}", Uri.EscapeDataString(ConvertToString(pageId, CultureInfo.InvariantCulture)));
       if (page != null) {
         urlBuilder.Append(Uri.EscapeDataString("page") + "=")
           .Append(Uri.EscapeDataString(ConvertToString(page,
@@ -7915,9 +7848,7 @@ namespace SergiyE.StatusPageIoApi {
         var url = urlBuilder.ToString();
         request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
 
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
+        var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         try {
           var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
           foreach (var item in response.Content.Headers)
@@ -7925,7 +7856,7 @@ namespace SergiyE.StatusPageIoApi {
 
           var status = (int)response.StatusCode;
           if (status == 200) {
-            var objectResponse = await ReadObjectResponseAsync<ICollection<Component>>(response, headers, cancellationToken).ConfigureAwait(false);
+            var objectResponse = await ReadObjectResponseAsync<Component[]>(response, headers, cancellationToken).ConfigureAwait(false);
             return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
           }
           else if (status == 401) {
@@ -7952,13 +7883,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// If group_id is "null" then the component will be removed from a group.
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PatchComponent(string pageId, string componentId,
       PatchPagesPageIdComponents body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8069,13 +8000,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// If group_id is "null" then the component will be removed from a group.
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PutComponent(
-      string pageId, string componentId, PutPagesPageIdComponents body,
-      CancellationToken cancellationToken) {
+    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutPagesPageIdComponents body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8182,12 +8111,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete a component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Delete a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task DeleteComponent(string pageId,
-      string componentId, CancellationToken cancellationToken) {
+    public virtual async Task DeleteComponent(string pageId, string componentId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8263,12 +8191,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Get a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> GetComponent(
-      string pageId, string componentId, CancellationToken cancellationToken) {
+    public virtual async Task<Component> GetComponent(string pageId, string componentId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8357,9 +8284,9 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get uptime data for a component that has uptime showcase enabled
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
-    /// <param name="skip_related_events">Skips supplying the related events data along with the component uptime data.</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
+    /// <param name="skipRelatedEvents">Skips supplying the related events data along with the component uptime data.</param>
     /// <param name="start">The start date for uptime calculation (defaults to the component's start_date field or 90 days ago, whichever is more recent).
     /// <br/>The maximum supported date range is six calendar months. If the year is given, the date defaults to the first day of the year.
     /// <br/>If the year and month are given, the start date defaults to the first day of that month.
@@ -8369,9 +8296,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <br/>The earliest supported date is January 1, 1970.</param>
     /// <returns>Get uptime data for a component that has uptime showcase enabled</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ComponentUptime> GetComponentUptime(string pageId, string componentId,
-      bool? skipRelatedEvents,
-      object start, object end, CancellationToken cancellationToken) {
+    public virtual async Task<ComponentUptime> GetComponentUptime(string pageId, string componentId, bool? skipRelatedEvents, object start, object end, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8492,12 +8417,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Remove page access users from component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Remove page access users from component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> DeleteComponentPageAccessUsers(string pageId, string componentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8565,12 +8490,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add page access users to a component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Add page access users to a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PostComponentPageAccessUsers(string pageId, string componentId, Body body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8654,12 +8579,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Remove page access groups from a component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Remove page access groups from a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> DeleteComponentPageAccessGroups(string pageId, string componentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8727,12 +8652,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add page access groups to a component
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
-    /// <param name="component_id">Component identifier</param>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="componentId">Component identifier</param>
     /// <returns>Add page access groups to a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PostComponentPageAccessGroups(string pageId, string componentId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8849,11 +8774,10 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a component group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PostComponentGroups(
-      string pageId, PostPagesPageIdComponentGroups body, CancellationToken cancellationToken) {
+    public virtual async Task<GroupComponent> PostComponentGroups(string pageId, PostPagesPageIdComponentGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -8981,13 +8905,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of component groups
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
+    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of component groups</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<GroupComponent>> GetComponentGroups(string pageId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<GroupComponent>> GetComponentGroups(string pageId, int? page = null, int? perPage = null,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9036,7 +8960,7 @@ namespace SergiyE.StatusPageIoApi {
             var status = (int)response.StatusCode;
             if (status == 200) {
               var objectResponse =
-                await ReadObjectResponseAsync<ICollection<GroupComponent>>(
+                await ReadObjectResponseAsync<IEnumerable<GroupComponent>>(
                   response, headers, cancellationToken).ConfigureAwait(false);
               if (objectResponse.Object == null) {
                 throw new ApiException("Response was null which was not expected.", status,
@@ -9097,13 +9021,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a component group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="id">Component group identifier</param>
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PatchComponentGroup(string pageId, string id,
-      PatchPagesPageIdComponentGroups body,
-      CancellationToken cancellationToken) {
+    public virtual async Task<GroupComponent> PatchComponentGroup(string pageId, string id, PatchPagesPageIdComponentGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9225,13 +9147,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a component group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="id">Component group identifier</param>
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PutComponentGroup(
-      string pageId, string id, PutPagesPageIdComponentGroups body,
-      CancellationToken cancellationToken) {
+    public virtual async Task<GroupComponent> PutComponentGroup(string pageId, string id, PutPagesPageIdComponentGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9354,12 +9274,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete a component group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="id">Component group identifier</param>
     /// <returns>Delete a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> DeleteComponentGroup(
-      string pageId, string id, CancellationToken cancellationToken) {
+    public virtual async Task<GroupComponent> DeleteComponentGroup(string pageId, string id, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9462,12 +9381,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a component group
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="id">Component group identifier</param>
     /// <returns>Get a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> GetComponentGroup(
-      string pageId, string id, CancellationToken cancellationToken) {
+    public virtual async Task<GroupComponent> GetComponentGroup(string pageId, string id, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9570,7 +9488,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get uptime data for a component group that has uptime showcase enabled for at least one component.
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="id">Component group identifier</param>
     /// <param name="skip_related_events">Skips supplying the related events data along with the component uptime data.</param>
     /// <param name="start">The start date for uptime calculation (defaults to the date of the component in the group with the earliest start_date, or 90 days ago, whichever is more recent).
@@ -9585,7 +9503,7 @@ namespace SergiyE.StatusPageIoApi {
     public virtual async Task<ComponentGroupUptime> GetComponentGroupUptime(string pageId, string id,
       bool? skipRelatedEvents,
       object start,
-      object end, CancellationToken cancellationToken) {
+      object end, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9719,11 +9637,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add data points to metrics
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Data Point is submitted and is currently being added to the metrics</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricAddResponse> PostMetricsData(
-      string pageId, PostPagesPageIdMetricsData body, CancellationToken cancellationToken) {
+      string pageId, PostPagesPageIdMetricsData body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9852,13 +9770,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of metrics
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of metrics</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> GetMetrics(string pageId, int? page,
-      int? perPage, CancellationToken cancellationToken) {
+      int? perPage, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -9968,12 +9886,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PatchMetric(string pageId,
-      string metricId, PatchPagesPageIdMetrics body, CancellationToken cancellationToken) {
+      string metricId, PatchPagesPageIdMetrics body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10097,12 +10015,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PutMetric(string pageId,
-      string metricId, PutPagesPageIdMetrics body, CancellationToken cancellationToken) {
+      string metricId, PutPagesPageIdMetrics body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10226,12 +10144,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Delete a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> DeleteMetric(string pageId,
-      string metricId, CancellationToken cancellationToken) {
+      string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10335,12 +10253,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Get a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> GetMetric(string pageId,
-      string metricId, CancellationToken cancellationToken) {
+      string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10444,12 +10362,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Reset data for a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Reset data for a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> DeletePagesPageIdMetricsMetricIdDataAsync(
-      string pageId, string metricId, CancellationToken cancellationToken) {
+      string pageId, string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10553,12 +10471,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Add data to a metric
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metric_id">Metric Identifier</param>
     /// <returns>Add data to a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<SingleMetricAddResponse> PostMetricData(string pageId, string metricId,
-      PostPagesPageIdMetricsMetricIdData body, CancellationToken cancellationToken) {
+      PostPagesPageIdMetricsMetricIdData body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10694,11 +10612,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a list of metric providers
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Get a list of metric providers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<MetricsProvider>> GetMetricsProviders(string pageId,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<MetricsProvider>> GetMetricsProviders(string pageId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10734,7 +10652,7 @@ namespace SergiyE.StatusPageIoApi {
             var status = (int)response.StatusCode;
             if (status == 200) {
               var objectResponse =
-                await ReadObjectResponseAsync<ICollection<MetricsProvider>>(
+                await ReadObjectResponseAsync<IEnumerable<MetricsProvider>>(
                   response, headers, cancellationToken).ConfigureAwait(false);
               if (objectResponse.Object == null) {
                 throw new ApiException("Response was null which was not expected.", status,
@@ -10808,11 +10726,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Create a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> PostMetricsProviders(string pageId, PostPagesPageIdMetricsProviders body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -10954,12 +10872,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <returns>Get a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> GetMetricsProvider(string pageId, string metricsProviderId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11075,12 +10993,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <returns>Update a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> PatchMetricsProvider(string pageId, string metricsProviderId,
-      PatchPagesPageIdMetricsProviders body, CancellationToken cancellationToken) {
+      PatchPagesPageIdMetricsProviders body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11204,12 +11122,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <returns>Update a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> PutMetricsProvider(string pageId, string metricsProviderId,
-      PutPagesPageIdMetricsProviders body, CancellationToken cancellationToken) {
+      PutPagesPageIdMetricsProviders body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11333,12 +11251,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Delete a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <returns>Delete a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> DeleteMetricsProvider(string pageId, string metricsProviderId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11454,14 +11372,14 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// List metrics for a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>List metrics for a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> GetMetricsProviderMetrics(string pageId, string metricsProviderId,
-      int? page, int? perPage, CancellationToken cancellationToken) {
+      int? page, int? perPage, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11590,13 +11508,13 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Create a metric for a metric provider
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <param name="metrics_provider_id">Metric Provider Identifier</param>
     /// <returns>Create a metric for a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PostMetricsProviderMetrics(string pageId, string metricsProviderId,
       PostPagesPageIdMetricsProvidersMetricsProviderIdMetrics body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11744,11 +11662,11 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Get status embed config settings
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Get status embed config settings</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<StatusEmbedConfig> GetStatusEmbedConfig(string pageId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -11858,12 +11776,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update status embed config settings
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Update status embed config settings</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<StatusEmbedConfig> PatchStatusEmbedConfig(
       string pageId, PatchPagesPageIdStatusEmbedConfig body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -12005,12 +11923,12 @@ namespace SergiyE.StatusPageIoApi {
     /// <remarks>
     /// Update status embed config settings
     /// </remarks>
-    /// <param name="page_id">Page identifier</param>
+    /// <param name="pageId">Page identifier</param>
     /// <returns>Update status embed config settings</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<StatusEmbedConfig> PutStatusEmbedConfig(
       string pageId, PutPagesPageIdStatusEmbedConfig body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -12161,7 +12079,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <br/>                  User will lose access to any pages omitted from the payload.</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Permissions> PutOrganizationPermissionsUser(string organizationId, string userId,
-      PutOrganizationsOrganizationIdPermissions body, CancellationToken cancellationToken) {
+      PutOrganizationsOrganizationIdPermissions body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 
@@ -12302,7 +12220,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Get a user's permissions</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Permissions> GetOrganizationPermissionsUser(string organizationId, string userId,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 
@@ -12411,7 +12329,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Delete a user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<User> DeleteOrganizationUser(
-      string organizationId, string userId, CancellationToken cancellationToken) {
+      string organizationId, string userId, CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 
@@ -12532,7 +12450,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<User> PostOrganizationUsers(
       string organizationId, PostOrganizationsOrganizationIdUsers body,
-      CancellationToken cancellationToken) {
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 
@@ -12655,8 +12573,8 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="per_page">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <returns>Get a list of users</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ICollection<User>> GetOrganizationUsers(string organizationId, int? page, int? perPage,
-      CancellationToken cancellationToken) {
+    public virtual async Task<IEnumerable<User>> GetOrganizationUsers(string organizationId, int? page, int? perPage,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 
@@ -12705,7 +12623,7 @@ namespace SergiyE.StatusPageIoApi {
             var status = (int)response.StatusCode;
             if (status == 200) {
               var objectResponse =
-                await ReadObjectResponseAsync<ICollection<User>>(response,
+                await ReadObjectResponseAsync<IEnumerable<User>>(response,
                   headers, cancellationToken).ConfigureAwait(false);
               if (objectResponse.Object == null) {
                 throw new ApiException("Response was null which was not expected.", status,
@@ -12759,80 +12677,56 @@ namespace SergiyE.StatusPageIoApi {
       }
     }
 
-    protected virtual async Task<ObjectResponseResult<T>> ReadObjectResponseAsync<T>(
-      HttpResponseMessage response,
+    protected virtual async Task<ObjectResponseResult<T>> ReadObjectResponseAsync<T>(HttpResponseMessage response,
       IReadOnlyDictionary<string, IEnumerable<string>>
-        headers, CancellationToken cancellationToken) {
-      if (response == null || response.Content == null) {
+        headers, CancellationToken cancellationToken = default(CancellationToken)) {
+      if (response == null)
         return new ObjectResponseResult<T>(default(T), string.Empty);
-      }
 
-      if (ReadResponseAsString) {
-        var responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        try {
-          var typedBody =
-            JsonConvert.DeserializeObject<T>(responseText, JsonSerializerSettings);
-          return new ObjectResponseResult<T>(typedBody, responseText);
-        }
-        catch (JsonException exception) {
-          var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
-          throw new ApiException(message, (int)response.StatusCode, responseText, headers, exception);
-        }
+      var responseText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+      try {
+        var typedBody = JsonConvert.DeserializeObject<T>(responseText, JsonSerializerSettings);
+        return new ObjectResponseResult<T>(typedBody, responseText);
       }
-      else {
-        try {
-          using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-          using (var streamReader = new System.IO.StreamReader(responseStream))
-          using (var jsonTextReader = new JsonTextReader(streamReader)) {
-            var serializer = JsonSerializer.Create(JsonSerializerSettings);
-            var typedBody = serializer.Deserialize<T>(jsonTextReader);
-            return new ObjectResponseResult<T>(typedBody, string.Empty);
-          }
-        }
-        catch (JsonException exception) {
-          var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
-          throw new ApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
-        }
+      catch (JsonException exception) {
+        throw new ApiException("Could not deserialize the response body string as " + typeof(T).FullName + ".", (int)response.StatusCode, responseText, headers, exception);
       }
     }
 
-    private string ConvertToString(object value, CultureInfo cultureInfo) {
-      if (value == null) {
-        return "";
-      }
-
-      if (value is Enum) {
-        var name = Enum.GetName(value.GetType(), value);
-        if (name != null) {
-          var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType())
-            .GetDeclaredField(name);
-          if (field != null) {
-            var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field,
-                typeof(System.Runtime.Serialization.EnumMemberAttribute))
-              as System.Runtime.Serialization.EnumMemberAttribute;
-            if (attribute != null) {
-              return attribute.Value != null ? attribute.Value : name;
+    private static string ConvertToString(object value, CultureInfo cultureInfo) {
+      switch (value) {
+        case null:
+          return "";
+        case Enum: {
+          var name = Enum.GetName(value.GetType(), value);
+          if (name != null) {
+            var field = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType())
+              .GetDeclaredField(name);
+            if (field != null && System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field, typeof(EnumMemberAttribute)) is EnumMemberAttribute attribute) {
+              return attribute.Value ?? name;
             }
+
+            var converted = Convert.ToString(Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()), cultureInfo));
+            return converted ?? string.Empty;
+          }
+          break;
+        }
+        case bool b:
+          return Convert.ToString(b, cultureInfo).ToLowerInvariant();
+        case byte[] bytes:
+          return Convert.ToBase64String(bytes);
+        default: {
+          if (value.GetType().IsArray) {
+            var array = ((Array)value).OfType<object>();
+            return string.Join(",", array.Select(o => ConvertToString(o, cultureInfo)));
           }
 
-          var converted = Convert.ToString(Convert.ChangeType(value,
-            Enum.GetUnderlyingType(value.GetType()), cultureInfo));
-          return converted == null ? string.Empty : converted;
+          break;
         }
-      }
-      else if (value is bool) {
-        return Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
-      }
-      else if (value is byte[]) {
-        return Convert.ToBase64String((byte[])value);
-      }
-      else if (value.GetType().IsArray) {
-        var array = ((Array)value).OfType<object>();
-        return string.Join(",", array.Select(o => ConvertToString(o, cultureInfo)));
       }
 
       var result = Convert.ToString(value, cultureInfo);
-      return result == null ? "" : result;
+      return result ?? "";
     }
 
     protected struct ObjectResponseResult<T> {
@@ -12842,7 +12736,6 @@ namespace SergiyE.StatusPageIoApi {
       }
 
       public T Object { get; }
-
       public string Text { get; }
     }
   }
@@ -12851,1078 +12744,729 @@ namespace SergiyE.StatusPageIoApi {
   /// Get a page
   /// </summary>
   public class Page {
-    private IDictionary<string, object> additionalProperties;
-
     /// <summary>
     /// Page identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Timestamp the record was created
     /// </summary>
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Timestamp the record was last updated
     /// </summary>
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Name of your page to be displayed
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
-    [JsonProperty("page_description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_description")]
     public string PageDescription { get; set; }
 
-    [JsonProperty("headline", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("headline")]
     public string Headline { get; set; }
 
     /// <summary>
     /// The main template your statuspage will use
     /// </summary>
-    [JsonProperty("branding", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Branding { get; set; }
+    [JsonProperty("branding")]
+    public PageBranding Branding { get; set; }
 
     /// <summary>
     /// Subdomain at which to access your status page
     /// </summary>
-    [JsonProperty("subdomain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("subdomain")]
     public string Subdomain { get; set; }
 
     /// <summary>
     /// CNAME alias for your status page
     /// </summary>
-    [JsonProperty("domain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("domain")]
     public string Domain { get; set; }
 
     /// <summary>
     /// Website of your page.  Clicking on your statuspage image will link here.
     /// </summary>
-    [JsonProperty("url", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("url")]
     public string Url { get; set; }
 
-    [JsonProperty("support_url", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("support_url")]
     public string SupportUrl { get; set; }
 
     /// <summary>
     /// Should your page hide itself from search engines
     /// </summary>
-    [JsonProperty("hidden_from_search", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("hidden_from_search")]
     public bool HiddenFromSearch { get; set; }
 
     /// <summary>
     /// Can your users subscribe to all notifications on the page
     /// </summary>
-    [JsonProperty("allow_page_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_page_subscribers")]
     public bool AllowPageSubscribers { get; set; }
 
     /// <summary>
     /// Can your users subscribe to notifications for a single incident
     /// </summary>
-    [JsonProperty("allow_incident_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_incident_subscribers")]
     public bool AllowIncidentSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via email
     /// </summary>
-    [JsonProperty("allow_email_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_email_subscribers")]
     public bool AllowEmailSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via SMS
     /// </summary>
-    [JsonProperty("allow_sms_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_sms_subscribers")]
     public bool AllowSmsSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
     /// </summary>
-    [JsonProperty("allow_rss_atom_feeds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_rss_atom_feeds")]
     public bool AllowRssAtomFeeds { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via Webhooks
     /// </summary>
-    [JsonProperty("allow_webhook_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("allow_webhook_subscribers")]
     public bool AllowWebhookSubscribers { get; set; }
 
     /// <summary>
     /// Allows you to customize the email address your page notifications come from
     /// </summary>
-    [JsonProperty("notifications_from_email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notifications_from_email")]
     public string NotificationsFromEmail { get; set; }
 
     /// <summary>
     /// Allows you to customize the footer appearing on your notification emails.  Accepts Markdown for formatting
     /// </summary>
-    [JsonProperty("notifications_email_footer", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notifications_email_footer")]
     public string NotificationsEmailFooter { get; set; }
 
-    [JsonProperty("activity_score", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("activity_score")]
     public float ActivityScore { get; set; }
 
-    [JsonProperty("twitter_username", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("twitter_username")]
     public string TwitterUsername { get; set; }
 
-    [JsonProperty("viewers_must_be_team_members", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("viewers_must_be_team_members")]
     public bool ViewersMustBeTeamMembers { get; set; }
 
-    [JsonProperty("ip_restrictions", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("ip_restrictions")]
     public string IpRestrictions { get; set; }
 
-    [JsonProperty("city", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("city")]
     public string City { get; set; }
 
-    [JsonProperty("state", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("state")]
     public string State { get; set; }
 
-    [JsonProperty("country", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("country")]
     public string Country { get; set; }
 
     /// <summary>
     /// Timezone configured for your page
     /// </summary>
-    [JsonProperty("time_zone", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("time_zone")]
     public string TimeZone { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_body_background_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_body_background_color")]
     public string CssBodyBackgroundColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_font_color")]
     public string CssFontColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_light_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_light_font_color")]
     public string CssLightFontColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_greens", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_greens")]
     public string CssGreens { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_yellows", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_yellows")]
     public string CssYellows { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_oranges", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_oranges")]
     public string CssOranges { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_blues", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_blues")]
     public string CssBlues { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_reds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_reds")]
     public string CssReds { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_border_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_border_color")]
     public string CssBorderColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_graph_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_graph_color")]
     public string CssGraphColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_link_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_link_color")]
     public string CssLinkColor { get; set; }
 
     /// <summary>
     /// CSS Color
     /// </summary>
-    [JsonProperty("css_no_data", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("css_no_data")]
     public string CssNoData { get; set; }
 
-    [JsonProperty("favicon_logo", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("favicon_logo")]
     public string FaviconLogo { get; set; }
 
-    [JsonProperty("transactional_logo", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("transactional_logo")]
     public string TransactionalLogo { get; set; }
 
-    [JsonProperty("hero_cover", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("hero_cover")]
     public string HeroCover { get; set; }
 
-    [JsonProperty("email_logo", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email_logo")]
     public string EmailLogo { get; set; }
 
-    [JsonProperty("twitter_logo", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("twitter_logo")]
     public string TwitterLogo { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a list of users
   /// </summary>
   public class ErrorEntity {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("message", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("message")]
     public string Message { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a page
   /// </summary>
   public class PatchPages {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Page2 Page { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("page")]
+    public Page Page { get; set; }
   }
 
   /// <summary>
   /// Update a page
   /// </summary>
   public class PutPages {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Page3 Page { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("page")]
+    public Page Page { get; set; }
   }
 
   /// <summary>
   /// Add a page access user
   /// </summary>
   public class PostPagesPageIdPageAccessUsers {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page_access_user", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("page_access_user")]
     public PageAccessUser PageAccessUser { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Delete metric for page access user
   /// </summary>
   public class PageAccessUser {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Page Access User Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public string Email { get; set; }
 
     /// <summary>
     /// IDP login user id. Key is typically "uid".
     /// </summary>
-    [JsonProperty("external_login", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("external_login")]
     public string ExternalLogin { get; set; }
 
-    [JsonProperty("page_access_group_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_access_group_id")]
     public string PageAccessGroupId { get; set; }
 
-    [JsonProperty("page_access_group_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> PageAccessGroupIds { get; set; }
+    [JsonProperty("page_access_group_ids")]
+    public IEnumerable<string> PageAccessGroupIds { get; set; }
 
-    [JsonProperty("subscribe_to_components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("subscribe_to_components")]
     public bool SubscribeToComponents { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add components for page access user
   /// </summary>
   public class PatchPagesPageIdPageAccessUsersPageAccessUserIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of component codes to allow access to
     /// </summary>
     [JsonProperty("component_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> ComponentIds { get; set; } =
+    public IEnumerable<string> ComponentIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add components for page access user
   /// </summary>
   public class PutPagesPageIdPageAccessUsersPageAccessUserIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of component codes to allow access to
     /// </summary>
     [JsonProperty("component_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> ComponentIds { get; set; } =
+    public IEnumerable<string> ComponentIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Replace components for page access user
   /// </summary>
   public class PostPagesPageIdPageAccessUsersPageAccessUserIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of component codes to allow access to
     /// </summary>
     [JsonProperty("component_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> ComponentIds { get; set; } =
+    public IEnumerable<string> ComponentIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Remove components for page access user
   /// </summary>
   public class DeletePagesPageIdPageAccessUsersPageAccessUserIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of components codes to remove.  If omitted, all components will be removed.
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Add page access groups to a component
   /// </summary>
   public class Component {
-    private IDictionary<string, object> additionalProperties;
 
     /// <summary>
     /// Identifier for component
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Page identifier
     /// </summary>
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
     /// <summary>
     /// Component Group identifier
     /// </summary>
-    [JsonProperty("group_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("group_id")]
     public string GroupId { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Is this component a group
     /// </summary>
-    [JsonProperty("group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("group")]
     public bool Group { get; set; }
 
     /// <summary>
     /// Display name for component
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// More detailed description for component
     /// </summary>
-    [JsonProperty("description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("description")]
     public string Description { get; set; }
 
     /// <summary>
     /// Order the component will appear on the page
     /// </summary>
-    [JsonProperty("position", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("position")]
     public int Position { get; set; }
 
     /// <summary>
     /// Status of component
     /// </summary>
-    [JsonProperty("status", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("status")]
     public ComponentStatus Status { get; set; }
 
     /// <summary>
     /// Should this component be showcased
     /// </summary>
-    [JsonProperty("showcase", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("showcase")]
     public bool Showcase { get; set; }
 
     /// <summary>
     /// Requires a special feature flag to be enabled
     /// </summary>
-    [JsonProperty("only_show_if_degraded", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("only_show_if_degraded")]
     public bool OnlyShowIfDegraded { get; set; }
 
     /// <summary>
     /// Requires a special feature flag to be enabled
     /// </summary>
-    [JsonProperty("automation_email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("automation_email")]
     public string AutomationEmail { get; set; }
 
     /// <summary>
     /// The date this component started being used
     /// </summary>
-    [JsonProperty("start_date", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(DateFormatConverter))]
+    [JsonProperty("start_date")]
     public DateTimeOffset StartDate { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add metrics for page access user
   /// </summary>
   public class PatchPagesPageIdPageAccessUsersPageAccessUserIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of metrics to add
     /// </summary>
     [JsonProperty("metric_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> MetricIds { get; set; } =
+    public IEnumerable<string> MetricIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add metrics for page access user
   /// </summary>
   public class PutPagesPageIdPageAccessUsersPageAccessUserIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of metrics to add
     /// </summary>
     [JsonProperty("metric_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> MetricIds { get; set; } =
+    public IEnumerable<string> MetricIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Replace metrics for page access user
   /// </summary>
   public class PostPagesPageIdPageAccessUsersPageAccessUserIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of metrics to add
     /// </summary>
     [JsonProperty("metric_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> MetricIds { get; set; } =
+    public IEnumerable<string> MetricIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Delete metrics for page access user
   /// </summary>
   public class DeletePagesPageIdPageAccessUsersPageAccessUserIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of metrics to remove
     /// </summary>
-    [JsonProperty("metric_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> MetricIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("metric_ids")]
+    public IEnumerable<string> MetricIds { get; set; }
   }
 
   /// <summary>
   /// Create a metric for a metric provider
   /// </summary>
   public class Metric {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Metric identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Metric Provider identifier
     /// </summary>
-    [JsonProperty("metrics_provider_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("metrics_provider_id")]
     public string MetricsProviderId { get; set; }
 
     /// <summary>
     /// Metric Display identifier used to look up the metric data from the provider
     /// </summary>
-    [JsonProperty("metric_identifier", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("metric_identifier")]
     public string MetricIdentifier { get; set; }
 
     /// <summary>
     /// Name of metric
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Should the metric be displayed
     /// </summary>
-    [JsonProperty("display", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("display")]
     public bool Display { get; set; }
 
-    [JsonProperty("tooltip_description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("tooltip_description")]
     public string TooltipDescription { get; set; }
 
-    [JsonProperty("backfilled", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("backfilled")]
     public bool Backfilled { get; set; }
 
-    [JsonProperty("y_axis_min", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("y_axis_min")]
     public float YAxisMin { get; set; }
 
-    [JsonProperty("y_axis_max", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("y_axis_max")]
     public float YAxisMax { get; set; }
 
     /// <summary>
     /// Should the values on the y axis be hidden on render
     /// </summary>
-    [JsonProperty("y_axis_hidden", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("y_axis_hidden")]
     public bool YAxisHidden { get; set; }
 
     /// <summary>
     /// Suffix to describe the units on the graph
     /// </summary>
-    [JsonProperty("suffix", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("suffix")]
     public string Suffix { get; set; }
 
-    [JsonProperty("decimal_places", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("decimal_places")]
     public int DecimalPlaces { get; set; }
 
-    [JsonProperty("most_recent_data_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("most_recent_data_at")]
     public DateTimeOffset MostRecentDataAt { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
-    [JsonProperty("last_fetched_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("last_fetched_at")]
     public DateTimeOffset LastFetchedAt { get; set; }
 
-    [JsonProperty("backfill_percentage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("backfill_percentage")]
     public int BackfillPercentage { get; set; }
 
-    [JsonProperty("reference_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("reference_name")]
     public string ReferenceName { get; set; }
+    
+    /// <summary>
+    /// The transform to apply to metric before pulling into Statuspage. One of: "average", "count", "max", "min", or "sum"
+    /// </summary>
+    [JsonProperty("transform")]
+    public string Transform { get; set; }
 
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    /// <summary>
+    /// The Identifier for new relic application. Required in the case of NewRelic only
+    /// </summary>
+    [JsonProperty("application_id")]
+    public string ApplicationId { get; set; }
   }
 
   /// <summary>
   /// Remove a component from a page access group
   /// </summary>
   public class PageAccessGroup {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Page Access Group Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Page Identifier.
     /// </summary>
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
     /// <summary>
     /// Name for this Group.
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
-    [JsonProperty("page_access_user_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> PageAccessUserIds { get; set; }
+    [JsonProperty("page_access_user_ids")]
+    public IEnumerable<string> PageAccessUserIds { get; set; }
 
     /// <summary>
     /// Associates group with external group.
     /// </summary>
-    [JsonProperty("external_identifier", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("external_identifier")]
     public string ExternalIdentifier { get; set; }
 
-    [JsonProperty("metric_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> MetricIds { get; set; }
+    [JsonProperty("metric_ids")]
+    public IEnumerable<string> MetricIds { get; set; }
 
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a page access group
   /// </summary>
   public class PostPagesPageIdPageAccessGroups {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page_access_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("page_access_group")]
     public PageAccessGroup PageAccessGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a page access group
   /// </summary>
   public class PatchPagesPageIdPageAccessGroups {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page_access_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("page_access_group")]
     public PageAccessGroup PageAccessGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a page access group
   /// </summary>
   public class PutPagesPageIdPageAccessGroups {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("page_access_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("page_access_group")]
     public PageAccessGroup PageAccessGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add components to page access group
   /// </summary>
   public class PatchPagesPageIdPageAccessGroupsPageAccessGroupIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of Component identifiers
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Add components to page access group
   /// </summary>
   public class PutPagesPageIdPageAccessGroupsPageAccessGroupIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of Component identifiers
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Replace components for a page access group
   /// </summary>
   public class PostPagesPageIdPageAccessGroupsPageAccessGroupIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of components codes to set on the page access group
     /// </summary>
     [JsonProperty("component_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> ComponentIds { get; set; } =
+    public IEnumerable<string> ComponentIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Delete components for a page access group
   /// </summary>
   public class DeletePagesPageIdPageAccessGroupsPageAccessGroupIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Resend confirmations to a list of subscribers
   /// </summary>
   public class PostPagesPageIdSubscribersResendConfirmation {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The array of subscriber codes to resend confirmations for, or "all" to resend confirmations to all subscribers. Only unconfirmed email subscribers will receive this notification.
     /// </summary>
     [JsonProperty("subscribers", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Subscribers { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Unsubscribe a list of subscribers
   /// </summary>
   public class PostPagesPageIdSubscribersUnsubscribe {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The array of subscriber codes to unsubscribe (limited to 100), or "all" to unsubscribe all subscribers if the number of subscribers is less than 100.
     /// </summary>
@@ -13933,44 +13477,30 @@ namespace SergiyE.StatusPageIoApi {
     /// <summary>
     /// If this is present, only unsubscribe subscribers of this type.
     /// </summary>
-    [JsonProperty("type", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("type")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public PostPagesPageIdSubscribersUnsubscribeType Type { get; set; }
 
     /// <summary>
     /// If this is present, only unsubscribe subscribers in this state. Specify state "all" to unsubscribe subscribers in any states.
     /// </summary>
-    [JsonProperty("state", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("state")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public PostPagesPageIdSubscribersUnsubscribeState State { get; set; } =
       PostPagesPageIdSubscribersUnsubscribeState.Active;
 
     /// <summary>
     /// If skip_unsubscription_notification is true, the subscribers do not receive any notifications when they are unsubscribed.
     /// </summary>
-    [JsonProperty("skip_unsubscription_notification",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("skip_unsubscription_notification")]
     public bool SkipUnsubscriptionNotification { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Reactivate a list of quarantined subscribers
   /// </summary>
   public class PostPagesPageIdSubscribersReactivate {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The array of quarantined subscriber codes to reactivate, or "all" to reactivate all quarantined subscribers.
     /// </summary>
@@ -13981,1891 +13511,1254 @@ namespace SergiyE.StatusPageIoApi {
     /// <summary>
     /// If this is present, only reactivate subscribers of this type.
     /// </summary>
-    [JsonProperty("type", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("type")]
     public PostPagesPageIdSubscribersReactivateType Type { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a histogram of subscribers by type and then state
   /// </summary>
   public class SubscriberCountByTypeAndState {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("email")]
     public SubscriberCountByState Email { get; set; }
 
-    [JsonProperty("sms", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("sms")]
     public SubscriberCountByState Sms { get; set; }
 
-    [JsonProperty("webhook", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("webhook")]
     public SubscriberCountByState Webhook { get; set; }
 
-    [JsonProperty("integration_partner", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("integration_partner")]
     public SubscriberCountByState IntegrationPartner { get; set; }
 
-    [JsonProperty("slack", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("slack")]
     public SubscriberCountByState Slack { get; set; }
 
-    [JsonProperty("teams", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("teams")]
     public SubscriberCountByState Teams { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class SubscriberCountByState {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The number of active subscribers found by the query.
     /// </summary>
-    [JsonProperty("active", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("active")]
     public int Active { get; set; }
 
     /// <summary>
     /// The number of unconfirmed subscribers found by the query.
     /// </summary>
-    [JsonProperty("unconfirmed", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("unconfirmed")]
     public int Unconfirmed { get; set; }
 
     /// <summary>
     /// The number of quarantined subscribers found by the query.
     /// </summary>
-    [JsonProperty("quarantined", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("quarantined")]
     public int Quarantined { get; set; }
 
     /// <summary>
     /// The total number of subscribers found by the query.
     /// </summary>
-    [JsonProperty("total", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("total")]
     public int Total { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a count of subscribers by type
   /// </summary>
   public class SubscriberCountByType {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The number of Email subscribers found by the query.
     /// </summary>
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public int Email { get; set; }
 
     /// <summary>
     /// The number of Webhook subscribers found by the query.
     /// </summary>
-    [JsonProperty("sms", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("sms")]
     public int Sms { get; set; }
 
     /// <summary>
     /// The number of SMS subscribers found by the query.
     /// </summary>
-    [JsonProperty("webhook", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("webhook")]
     public int Webhook { get; set; }
 
     /// <summary>
     /// The number of integration partners found by the query.
     /// </summary>
-    [JsonProperty("integration_partner", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("integration_partner")]
     public int IntegrationPartner { get; set; }
 
     /// <summary>
     /// The number of Slack subscribers found by the query.
     /// </summary>
-    [JsonProperty("slack", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("slack")]
     public int Slack { get; set; }
 
     /// <summary>
     /// The number of MS teams subscribers found by the query.
     /// </summary>
-    [JsonProperty("teams", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("teams")]
     public int Teams { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get an incident subscriber
   /// </summary>
   public class Subscriber {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Subscriber Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// If this is true, do not notify the user with changes to their subscription.
     /// </summary>
-    [JsonProperty("skip_confirmation_notification",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("skip_confirmation_notification")]
     public bool SkipConfirmationNotification { get; set; }
 
     /// <summary>
     /// The communication mode of the subscriber.
     /// </summary>
-    [JsonProperty("mode", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("mode")]
     public string Mode { get; set; }
 
     /// <summary>
     /// The email address to use to contact the subscriber. Used for Email and Webhook subscribers.
     /// </summary>
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public string Email { get; set; }
 
     /// <summary>
     /// The URL where a webhook subscriber elects to receive updates.
     /// </summary>
-    [JsonProperty("endpoint", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("endpoint")]
     public string Endpoint { get; set; }
 
     /// <summary>
     /// The phone number used to contact an SMS subscriber
     /// </summary>
-    [JsonProperty("phone_number", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("phone_number")]
     public string PhoneNumber { get; set; }
 
     /// <summary>
     /// The two-character country code representing the country of which the phone_number is a part.
     /// </summary>
-    [JsonProperty("phone_country", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("phone_country")]
     public string PhoneCountry { get; set; }
 
     /// <summary>
     /// A formatted version of the phone_number and phone_country pair, nicely formatted for display.
     /// </summary>
-    [JsonProperty("display_phone_number", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("display_phone_number")]
     public string DisplayPhoneNumber { get; set; }
 
     /// <summary>
     /// Obfuscated slack channel name
     /// </summary>
-    [JsonProperty("obfuscated_channel_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("obfuscated_channel_name")]
     public string ObfuscatedChannelName { get; set; }
 
     /// <summary>
     /// The workspace name of the slack subscriber.
     /// </summary>
-    [JsonProperty("workspace_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("workspace_name")]
     public string WorkspaceName { get; set; }
 
     /// <summary>
     /// The timestamp when the subscriber was quarantined due to an issue reaching them.
     /// </summary>
-    [JsonProperty("quarantined_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("quarantined_at")]
     public DateTimeOffset QuarantinedAt { get; set; }
 
     /// <summary>
     /// The timestamp when a quarantined subscriber will be purged (unsubscribed).
     /// </summary>
-    [JsonProperty("purge_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("purge_at")]
     public DateTimeOffset PurgeAt { get; set; }
 
     /// <summary>
     /// The components for which the subscriber has elected to receive updates.
     /// </summary>
-    [JsonProperty("components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("components")]
     public string Components { get; set; }
 
     /// <summary>
     /// The Page Access user this subscriber belongs to (only for audience-specific pages).
     /// </summary>
-    [JsonProperty("page_access_user_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_access_user_id")]
     public string PageAccessUserId { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// The code of the page access user to which the subscriber belongs.
     /// </summary>
-    [JsonProperty("page_access_user", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_access_user")]
     public string PageAccessUser { get; set; }
 
     /// <summary>
     /// A list of component ids for which the subscriber should recieve updates for. Components must be an array with at least one element if it is passed at all. Each component must belong to the page indicated in the path.
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Create a subscriber. Not applicable for Slack subscribers.
   /// </summary>
   public class PostPagesPageIdSubscribers {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("subscriber", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("subscriber")]
     public Subscriber Subscriber { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a subscriber
   /// </summary>
   public class PatchPagesPageIdSubscribers {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// A list of component ids for which the subscriber should recieve updates for. Components must be an array with at least one element if it is passed at all. Each component must belong to the page indicated in the path. To set the subscriber to be subscribed to all components on the page, exclude this parameter.
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   /// <summary>
   /// Create a template
   /// </summary>
   public class PostPagesPageIdIncidentTemplates {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("template", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("template")]
     public Template Template { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a list of templates
   /// </summary>
   public class IncidentTemplate {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident Template Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Affected components
     /// </summary>
-    [JsonProperty("components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<Component> Components { get; set; }
+    [JsonProperty("components")]
+    public IEnumerable<Component> Components { get; set; }
 
     /// <summary>
     /// Name of the template, as shown in the list on the "Templates" tab of the "Incidents" page
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Title to be applied to the incident or maintenance when selecting this template
     /// </summary>
-    [JsonProperty("title", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("title")]
     public string Title { get; set; }
 
     /// <summary>
     /// Body of the incident or maintenance update to be applied when selecting this template
     /// </summary>
-    [JsonProperty("body", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body")]
     public string Body { get; set; }
 
     /// <summary>
     /// Identifier of Template Group this template belongs to
     /// </summary>
-    [JsonProperty("group_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("group_id")]
     public string GroupId { get; set; }
 
     /// <summary>
     /// The status the incident or maintenance should transition to when selecting this template
     /// </summary>
-    [JsonProperty("update_status", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("update_status")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public IncidentTemplateUpdateStatus UpdateStatus { get; set; }
 
     /// <summary>
     /// Whether the "tweet update" checkbox should be selected when selecting this template
     /// </summary>
-    [JsonProperty("should_tweet", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("should_tweet")]
     public bool ShouldTweet { get; set; }
 
     /// <summary>
     /// Whether the "deliver notifications" checkbox should be selected when selecting this template
     /// </summary>
-    [JsonProperty("should_send_notifications", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("should_send_notifications")]
     public bool ShouldSendNotifications { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create an incident
   /// </summary>
   public class PostPagesPageIdIncidents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("incident", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("incident")]
     public Incident Incident { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get an incident
   /// </summary>
   public class Incident {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Incident components
     /// </summary>
-    [JsonProperty("components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<Component> Components { get; set; }
+    [JsonProperty("components")]
+    public IEnumerable<Component> Components { get; set; }
 
     /// <summary>
     /// The timestamp when the incident was created at.
     /// </summary>
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// The impact of the incident.
     /// </summary>
-    [JsonProperty("impact", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("impact")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public IncidentImpactOverride Impact { get; set; }
 
     /// <summary>
     /// value to override calculated impact value
     /// </summary>
-    [JsonProperty("impact_override", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("impact_override")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public IncidentImpactOverride ImpactOverride { get; set; }
 
     /// <summary>
     /// The incident updates for incident.
     /// </summary>
-    [JsonProperty("incident_updates", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<IncidentUpdate> IncidentUpdates { get; set; }
+    [JsonProperty("incident_updates")]
+    public IEnumerable<IncidentUpdate> IncidentUpdates { get; set; }
 
     /// <summary>
     /// The incident impacts for the incident.
     /// </summary>
-    [JsonProperty("incident_impacts", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<IncidentImpact> IncidentImpacts { get; set; }
+    [JsonProperty("incident_impacts")]
+    public IEnumerable<IncidentImpact> IncidentImpacts { get; set; }
 
     /// <summary>
     /// Metadata attached to the incident. Top level values must be objects.
     /// </summary>
-    [JsonProperty("metadata", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("metadata")]
     public object Metadata { get; set; }
 
     /// <summary>
     /// The timestamp when incident entered monitoring state.
     /// </summary>
-    [JsonProperty("monitoring_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("monitoring_at")]
     public DateTimeOffset MonitoringAt { get; set; }
 
     /// <summary>
     /// Incident Name. There is a maximum limit of 255 characters.
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Incident Page Identifier
     /// </summary>
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
     /// <summary>
     /// Body of the Postmortem.
     /// </summary>
-    [JsonProperty("postmortem_body", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_body")]
     public string PostmortemBody { get; set; }
 
     /// <summary>
     /// The timestamp when the incident postmortem body was last updated at.
     /// </summary>
-    [JsonProperty("postmortem_body_last_updated_at",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_body_last_updated_at")]
     public DateTimeOffset PostmortemBodyLastUpdatedAt { get; set; }
 
     /// <summary>
     /// Controls whether the incident will have postmortem.
     /// </summary>
-    [JsonProperty("postmortem_ignored", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_ignored")]
     public bool PostmortemIgnored { get; set; }
 
     /// <summary>
     /// Indicates whether subscribers are already notificed about postmortem.
     /// </summary>
-    [JsonProperty("postmortem_notified_subscribers",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_notified_subscribers")]
     public bool PostmortemNotifiedSubscribers { get; set; }
 
     /// <summary>
     /// Controls whether to decide if notify postmortem on twitter.
     /// </summary>
-    [JsonProperty("postmortem_notified_twitter", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_notified_twitter")]
     public bool PostmortemNotifiedTwitter { get; set; }
 
     /// <summary>
     /// The timestamp when the postmortem was published.
     /// </summary>
-    [JsonProperty("postmortem_published_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("postmortem_published_at")]
     public bool PostmortemPublishedAt { get; set; }
 
     /// <summary>
     /// The timestamp when incident was resolved.
     /// </summary>
-    [JsonProperty("resolved_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("resolved_at")]
     public DateTimeOffset ResolvedAt { get; set; }
 
     /// <summary>
     /// Controls whether the incident is scheduled to automatically change to complete.
     /// </summary>
-    [JsonProperty("scheduled_auto_completed", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_auto_completed")]
     public bool ScheduledAutoCompleted { get; set; }
 
     /// <summary>
     /// Controls whether the incident is scheduled to automatically change to in progress.
     /// </summary>
-    [JsonProperty("scheduled_auto_in_progress", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_auto_in_progress")]
     public bool ScheduledAutoInProgress { get; set; }
 
     /// <summary>
     /// The timestamp the incident is scheduled for.
     /// </summary>
-    [JsonProperty("scheduled_for", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_for")]
     public DateTimeOffset ScheduledFor { get; set; }
 
     /// <summary>
     /// Controls whether send notification when scheduled maintenances auto transition to completed.
     /// </summary>
-    [JsonProperty("auto_transition_deliver_notifications_at_end",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_transition_deliver_notifications_at_end")]
     public bool AutoTransitionDeliverNotificationsAtEnd { get; set; }
 
     /// <summary>
     /// Controls whether send notification when scheduled maintenances auto transition to started.
     /// </summary>
-    [JsonProperty("auto_transition_deliver_notifications_at_start",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_transition_deliver_notifications_at_start")]
     public bool AutoTransitionDeliverNotificationsAtStart { get; set; }
 
     /// <summary>
     /// Controls whether change components status to under_maintenance once scheduled maintenance is in progress.
     /// </summary>
-    [JsonProperty("auto_transition_to_maintenance_state",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_transition_to_maintenance_state")]
     public bool AutoTransitionToMaintenanceState { get; set; }
 
     /// <summary>
     /// Controls whether change components status to operational once scheduled maintenance completes.
     /// </summary>
-    [JsonProperty("auto_transition_to_operational_state",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_transition_to_operational_state")]
     public bool AutoTransitionToOperationalState { get; set; }
 
     /// <summary>
     /// Controls whether to remind subscribers prior to scheduled incidents.
     /// </summary>
-    [JsonProperty("scheduled_remind_prior", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_remind_prior")]
     public bool ScheduledRemindPrior { get; set; }
 
     /// <summary>
     /// The timestamp when the scheduled incident reminder was sent at.
     /// </summary>
-    [JsonProperty("scheduled_reminded_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_reminded_at")]
     public DateTimeOffset ScheduledRemindedAt { get; set; }
 
     /// <summary>
     /// The timestamp the incident is scheduled until.
     /// </summary>
-    [JsonProperty("scheduled_until", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_until")]
     public DateTimeOffset ScheduledUntil { get; set; }
 
     /// <summary>
     /// Incident Shortlink.
     /// </summary>
-    [JsonProperty("shortlink", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("shortlink")]
     public string Shortlink { get; set; }
 
     /// <summary>
     /// The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed.
     /// </summary>
-    [JsonProperty("status", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("status")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public IncidentStatus Status { get; set; }
 
     /// <summary>
     /// The timestamp when the incident was updated at.
     /// </summary>
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Custom reminder intervals for unresolved/open incidents. Not applicable for &lt;strong&gt;Scheduled maintenance&lt;/strong&gt;&lt;br&gt;There are 4 possible states for reminder_intervals:&lt;br&gt;&lt;strong&gt;DEFAULT:&lt;/strong&gt; NULL, representing a default behavior with intervals [3, 6, 12, 24].&lt;br&gt;&lt;strong&gt;AFTER:&lt;/strong&gt; A serialized array of strictly increasing intervals, each integer ranges from [1-24] (inclusive). Ex "[1, 5, 7, 10]"&lt;br&gt;&lt;strong&gt;EVERY:&lt;/strong&gt; An integer in the range [1-24] as a string, representing equal intervals. Ex "4" for [4, 8, 12, 16, 20, 24]&lt;br&gt;&lt;strong&gt;OFF:&lt;/strong&gt; A serialized empty array, for example, "[]", meaning no reminder notifications will be sent.
     /// </summary>
-    [JsonProperty("reminder_intervals", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("reminder_intervals")]
     public string ReminderIntervals { get; set; }
 
     /// <summary>
     /// Deliver notifications to subscribers if this is true. If this is false, create an incident without notifying customers.
     /// </summary>
-    [JsonProperty("deliver_notifications", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("deliver_notifications")]
     public bool DeliverNotifications { get; set; } = true;
 
     /// <summary>
     /// Controls whether tweet automatically when scheduled maintenance starts.
     /// </summary>
-    [JsonProperty("auto_tweet_at_beginning", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_tweet_at_beginning")]
     public bool AutoTweetAtBeginning { get; set; }
 
     /// <summary>
     /// Controls whether tweet automatically when scheduled maintenance completes.
     /// </summary>
-    [JsonProperty("auto_tweet_on_completion", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_tweet_on_completion")]
     public bool AutoTweetOnCompletion { get; set; }
 
     /// <summary>
     /// Controls whether tweet automatically when scheduled maintenance is created.
     /// </summary>
-    [JsonProperty("auto_tweet_on_creation", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_tweet_on_creation")]
     public bool AutoTweetOnCreation { get; set; }
 
     /// <summary>
     /// Controls whether tweet automatically one hour before scheduled maintenance starts.
     /// </summary>
-    [JsonProperty("auto_tweet_one_hour_before", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("auto_tweet_one_hour_before")]
     public bool AutoTweetOneHourBefore { get; set; }
 
     /// <summary>
     /// TimeStamp when incident was backfilled.
     /// </summary>
-    [JsonProperty("backfill_date", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("backfill_date")]
     public string BackfillDate { get; set; }
 
     /// <summary>
     /// Controls whether incident is backfilled. If true, components cannot be specified.
     /// </summary>
-    [JsonProperty("backfilled", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("backfilled")]
     public bool Backfilled { get; set; }
 
     /// <summary>
     /// The initial message, created as the first incident update. There is a maximum limit of 25000 characters
     /// </summary>
-    [JsonProperty("body", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body")]
     public string Body { get; set; }
 
     /// <summary>
     /// List of component_ids affected by this incident
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
 
     /// <summary>
     /// Same as :scheduled_auto_transition_in_progress. Controls whether the incident is scheduled to automatically change to in progress.
     /// </summary>
-    [JsonProperty("scheduled_auto_transition", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("scheduled_auto_transition")]
     public bool ScheduledAutoTransition { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a previous incident update
   /// </summary>
   public class IncidentUpdate {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident Update Identifier.
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Incident Identifier.
     /// </summary>
-    [JsonProperty("incident_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incident_id")]
     public string IncidentId { get; set; }
 
     /// <summary>
     /// Affected components associated with the incident update.
     /// </summary>
-    [JsonProperty("affected_components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<object> AffectedComponents { get; set; }
+    [JsonProperty("affected_components")]
+    public IEnumerable<object> AffectedComponents { get; set; }
 
     /// <summary>
     /// Incident update body.
     /// </summary>
-    [JsonProperty("body", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body")]
     public string Body { get; set; }
 
     /// <summary>
     /// The timestamp when the incident update was created at.
     /// </summary>
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// An optional customized tweet message for incident postmortem.
     /// </summary>
-    [JsonProperty("custom_tweet", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("custom_tweet")]
     public string CustomTweet { get; set; }
 
     /// <summary>
     /// Controls whether to delivery notifications.
     /// </summary>
-    [JsonProperty("deliver_notifications", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("deliver_notifications")]
     public bool DeliverNotifications { get; set; }
 
     /// <summary>
     /// Timestamp when incident update is happened.
     /// </summary>
-    [JsonProperty("display_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("display_at")]
     public DateTimeOffset DisplayAt { get; set; }
 
     /// <summary>
     /// The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed.
     /// </summary>
-    [JsonProperty("status", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("status")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public IncidentUpdateStatus Status { get; set; }
 
     /// <summary>
     /// Tweet identifier associated to this incident update.
     /// </summary>
-    [JsonProperty("tweet_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("tweet_id")]
     public string TweetId { get; set; }
 
     /// <summary>
     /// The timestamp when twitter updated at.
     /// </summary>
-    [JsonProperty("twitter_updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("twitter_updated_at")]
     public DateTimeOffset TwitterUpdatedAt { get; set; }
 
     /// <summary>
     /// The timestamp when the incident update is updated.
     /// </summary>
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Controls whether to create twitter update.
     /// </summary>
-    [JsonProperty("wants_twitter_update", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("wants_twitter_update")]
     public bool WantsTwitterUpdate { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class IncidentImpact {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident Impact Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// The tenant ID associated with the impact.
     /// </summary>
-    [JsonProperty("tenant_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("tenant_id")]
     public string TenantId { get; set; }
 
     /// <summary>
     /// The Atlassian organization ID associated with the impact.
     /// </summary>
-    [JsonProperty("atlassian_organization_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("atlassian_organization_id")]
     public string AtlassianOrganizationId { get; set; }
 
     /// <summary>
     /// The product name associated with the impact.
     /// </summary>
-    [JsonProperty("product_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("product_name")]
     public string ProductName { get; set; }
 
     /// <summary>
     /// The list of experiences impacted.
     /// </summary>
-    [JsonProperty("experiences", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> Experiences { get; set; }
+    [JsonProperty("experiences")]
+    public IEnumerable<string> Experiences { get; set; }
 
     /// <summary>
     /// The timestamp when the impact was created.
     /// </summary>
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update an incident
   /// </summary>
   public class PatchPagesPageIdIncidents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("incident", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("incident")]
     public Incident Incident { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update an incident
   /// </summary>
   public class PutPagesPageIdIncidents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("incident", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("incident")]
     public Incident Incident { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a previous incident update
   /// </summary>
   public class PatchPagesPageIdIncidentsIncidentIdIncidentUpdates {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("incident_update", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("incident_update")]
     public IncidentUpdate IncidentUpdate { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a previous incident update
   /// </summary>
   public class PutPagesPageIdIncidentsIncidentIdIncidentUpdates {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("incident_update", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("incident_update")]
     public IncidentUpdate IncidentUpdate { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create an incident subscriber
   /// </summary>
   public class PostPagesPageIdIncidentsIncidentIdSubscribers {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("subscriber", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("subscriber")]
     public Subscriber3 Subscriber { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Revert Postmortem
   /// </summary>
   public class Postmortem {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Preview Key
     /// </summary>
-    [JsonProperty("preview_key", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("preview_key")]
     public string PreviewKey { get; set; }
 
     /// <summary>
     /// Postmortem body
     /// </summary>
-    [JsonProperty("body", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body")]
     public string Body { get; set; }
 
-    [JsonProperty("body_updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body_updated_at")]
     public DateTimeOffset BodyUpdatedAt { get; set; }
 
     /// <summary>
     /// Body draft
     /// </summary>
-    [JsonProperty("body_draft", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body_draft")]
     public string BodyDraft { get; set; }
 
-    [JsonProperty("body_draft_updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("body_draft_updated_at")]
     public DateTimeOffset BodyDraftUpdatedAt { get; set; }
 
-    [JsonProperty("published_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("published_at")]
     public DateTimeOffset PublishedAt { get; set; }
 
     /// <summary>
     /// Should email subscribers be notified.
     /// </summary>
-    [JsonProperty("notify_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notify_subscribers")]
     public bool NotifySubscribers { get; set; }
 
     /// <summary>
     /// Should Twitter followers be notified.
     /// </summary>
-    [JsonProperty("notify_twitter", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notify_twitter")]
     public bool NotifyTwitter { get; set; }
 
     /// <summary>
     /// Custom tweet for Incident Postmortem
     /// </summary>
-    [JsonProperty("custom_tweet", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("custom_tweet")]
     public string CustomTweet { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create Postmortem
   /// </summary>
   public class PutPagesPageIdIncidentsIncidentIdPostmortem {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("postmortem", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("postmortem")]
     public Postmortem2 Postmortem { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Publish Postmortem
   /// </summary>
   public class PutPagesPageIdIncidentsIncidentIdPostmortemPublish {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("postmortem", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("postmortem")]
     public Postmortem3 Postmortem { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a component
   /// </summary>
   public class PostPagesPageIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("component", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("component")]
     public Component Component { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a component
   /// </summary>
   public class PatchPagesPageIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("component", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("component")]
     public Component Component { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a component
   /// </summary>
   public class PutPagesPageIdComponents {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("component", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("component")]
     public Component Component { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get uptime data for a component that has uptime showcase enabled
   /// </summary>
   public class ComponentUptime {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Start date used for uptime calculation (see the warnings field in the response if this value does not match the start parameter you provided).
     /// </summary>
-    [JsonProperty("range_start", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("range_start")]
     public DateTimeOffset RangeStart { get; set; }
 
     /// <summary>
     /// End date used for uptime calculation (see the warnings field in the response if this value does not match the end parameter you provided).
     /// </summary>
-    [JsonProperty("range_end", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("range_end")]
     public DateTimeOffset RangeEnd { get; set; }
 
     /// <summary>
     /// Uptime percentage for a component
     /// </summary>
-    [JsonProperty("uptime_percentage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("uptime_percentage")]
     public float UptimePercentage { get; set; }
 
     /// <summary>
     /// Seconds of major outage
     /// </summary>
-    [JsonProperty("major_outage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("major_outage")]
     public int MajorOutage { get; set; }
 
     /// <summary>
     /// Seconds of partial outage
     /// </summary>
-    [JsonProperty("partial_outage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("partial_outage")]
     public int PartialOutage { get; set; }
 
     /// <summary>
     /// Warning messages related to the uptime query that may occur
     /// </summary>
-    [JsonProperty("warnings", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("warnings")]
     public string Warnings { get; set; }
 
     /// <summary>
     /// Component identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Component display name
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Related incidents
     /// </summary>
-    [JsonProperty("related_events", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("related_events")]
     public RelatedEvents RelatedEvents { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a component group
   /// </summary>
   public class PostPagesPageIdComponentGroups {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Description of the component group.
     /// </summary>
-    [JsonProperty("description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("description")]
     public string Description { get; set; }
 
-    [JsonProperty("component_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("component_group")]
     public ComponentGroup ComponentGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a component group
   /// </summary>
   public class GroupComponent {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Component Group Identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
-    [JsonProperty("description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("description")]
     public string Description { get; set; }
 
-    [JsonProperty("components", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("components")]
     public string Components { get; set; }
 
-    [JsonProperty("position", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("position")]
     public string Position { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a component group
   /// </summary>
   public class PatchPagesPageIdComponentGroups {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Updated description of the component group.
     /// </summary>
-    [JsonProperty("description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("description")]
     public string Description { get; set; }
 
-    [JsonProperty("component_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ComponentGroup2 ComponentGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_group")]
+    public ComponentGroup ComponentGroup { get; set; }
   }
 
   /// <summary>
   /// Update a component group
   /// </summary>
   public class PutPagesPageIdComponentGroups {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Updated description of the component group.
     /// </summary>
-    [JsonProperty("description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("description")]
     public string Description { get; set; }
 
-    [JsonProperty("component_group", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ComponentGroup3 ComponentGroup { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_group")]
+    public ComponentGroup ComponentGroup { get; set; }
   }
-
+  
   /// <summary>
   /// Get uptime data for a component group that has uptime showcase enabled for at least one component.
   /// </summary>
   public class ComponentGroupUptime {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Start date used for uptime calculation (see the warnings field in the response if this value does not match the start parameter you provided).
     /// </summary>
-    [JsonProperty("range_start", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("range_start")]
     public DateTimeOffset RangeStart { get; set; }
 
     /// <summary>
     /// End date used for uptime calculation (see the warnings field in the response if this value does not match the end parameter you provided).
     /// </summary>
-    [JsonProperty("range_end", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("range_end")]
     public DateTimeOffset RangeEnd { get; set; }
 
     /// <summary>
     /// Uptime percentage for a component
     /// </summary>
-    [JsonProperty("uptime_percentage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("uptime_percentage")]
     public float UptimePercentage { get; set; }
 
     /// <summary>
     /// Seconds of major outage
     /// </summary>
-    [JsonProperty("major_outage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("major_outage")]
     public int MajorOutage { get; set; }
 
     /// <summary>
     /// Seconds of partial outage
     /// </summary>
-    [JsonProperty("partial_outage", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("partial_outage")]
     public int PartialOutage { get; set; }
 
     /// <summary>
     /// Warning messages related to the uptime query that may occur
     /// </summary>
-    [JsonProperty("warnings", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("warnings")]
     public string Warnings { get; set; }
 
     /// <summary>
     /// Component group identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Component group display name
     /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Related incidents by component
     /// </summary>
-    [JsonProperty("related_events", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public RelatedEvents2 RelatedEvents { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("related_events")]
+    public RelatedEvents RelatedEvents { get; set; }
   }
 
   /// <summary>
   /// Add data points to metrics
   /// </summary>
   public class MetricAddResponse {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Metric identifier to add data to
     /// </summary>
-    [JsonProperty("metric_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<MetricId> MetricId { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("metric_id")]
+    public IEnumerable<MetricId> MetricId { get; set; }
   }
 
   /// <summary>
   /// Add data points to metrics
   /// </summary>
   public class PostPagesPageIdMetricsData {
-    private IDictionary<string, object> additionalProperties;
-
+    
     [JsonProperty("data", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
     public MetricAddResponse Data { get; set; } = new MetricAddResponse();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a metric
   /// </summary>
   public class PatchPagesPageIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metric", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Metric2 Metric { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("metric")]
+    public Metric Metric { get; set; }
   }
 
   /// <summary>
   /// Update a metric
   /// </summary>
   public class PutPagesPageIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metric", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Metric3 Metric { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("metric")]
+    public Metric Metric { get; set; }
   }
 
   /// <summary>
   /// Add data to a metric
   /// </summary>
   public class PostPagesPageIdMetricsMetricIdData {
-    private IDictionary<string, object> additionalProperties;
-
+    
     [JsonProperty("data", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
     public Data Data { get; set; } = new Data();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Add data to a metric
   /// </summary>
   public class SingleMetricAddResponse {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("data", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Data2 Data { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("data")]
+    public Data Data { get; set; }
   }
 
   /// <summary>
   /// Delete a metric provider
   /// </summary>
   public class MetricsProvider {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Identifier for Metrics Provider
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// One of "Pingdom", "NewRelic", "Librato", "Datadog", or "Self"
     /// </summary>
-    [JsonProperty("type", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("type")]
     public string Type { get; set; }
 
-    [JsonProperty("disabled", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("disabled")]
     public bool Disabled { get; set; }
 
-    [JsonProperty("metric_base_uri", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("metric_base_uri")]
     public string MetricBaseUri { get; set; }
 
-    [JsonProperty("last_revalidated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("last_revalidated_at")]
     public DateTimeOffset LastRevalidatedAt { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
 
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public int PageId { get; set; }
 
     /// <summary>
     /// Required by the Librato metrics provider.
     /// </summary>
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public string Email { get; set; }
 
-    [JsonProperty("password", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("password")]
     public string Password { get; set; }
 
     /// <summary>
     /// Required by the Datadog and NewRelic type metrics providers.
     /// </summary>
-    [JsonProperty("api_key", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("api_key")]
     public string ApiKey { get; set; }
 
     /// <summary>
     /// Required by the Librato, Datadog and Pingdom type metrics providers.
     /// </summary>
-    [JsonProperty("api_token", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("api_token")]
     public string ApiToken { get; set; }
 
     /// <summary>
     /// Required by the Pingdom-type metrics provider.
     /// </summary>
-    [JsonProperty("application_key", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("application_key")]
     public string ApplicationKey { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a metric provider
   /// </summary>
   public class PostPagesPageIdMetricsProviders {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metrics_provider", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("metrics_provider")]
     public MetricsProvider MetricsProvider { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a metric provider
   /// </summary>
   public class PatchPagesPageIdMetricsProviders {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metrics_provider", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("metrics_provider")]
     public MetricsProvider MetricsProvider { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update a metric provider
   /// </summary>
   public class PutPagesPageIdMetricsProviders {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metrics_provider", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("metrics_provider")]
     public MetricsProvider MetricsProvider { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a metric for a metric provider
   /// </summary>
   public class PostPagesPageIdMetricsProvidersMetricsProviderIdMetrics {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("metric", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public Metric4 Metric { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    
+    [JsonProperty("metric")]
+    public Metric Metric { get; set; }
   }
 
   /// <summary>
   /// Update status embed config settings
   /// </summary>
   public class StatusEmbedConfig {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Page identifier
     /// </summary>
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
     /// <summary>
     /// Corner where status embed iframe will appear on page
     /// </summary>
-    [JsonProperty("position", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("position")]
     public string Position { get; set; }
 
     /// <summary>
     /// Color of status embed iframe background when displaying incident
     /// </summary>
-    [JsonProperty("incident_background_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incident_background_color")]
     public string IncidentBackgroundColor { get; set; }
 
     /// <summary>
     /// Color of status embed iframe text when displaying incident
     /// </summary>
-    [JsonProperty("incident_text_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incident_text_color")]
     public string IncidentTextColor { get; set; }
 
     /// <summary>
     /// Color of status embed iframe background when displaying maintenance
     /// </summary>
-    [JsonProperty("maintenance_background_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("maintenance_background_color")]
     public string MaintenanceBackgroundColor { get; set; }
 
     /// <summary>
     /// Color of status embed iframe text when displaying maintenance
     /// </summary>
-    [JsonProperty("maintenance_text_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("maintenance_text_color")]
     public string MaintenanceTextColor { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update status embed config settings
   /// </summary>
   public class PatchPagesPageIdStatusEmbedConfig {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("status_embed_config", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("status_embed_config")]
     public StatusEmbedConfig StatusEmbedConfig { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Update status embed config settings
   /// </summary>
   public class PutPagesPageIdStatusEmbedConfig {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("status_embed_config", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("status_embed_config")]
     public StatusEmbedConfig StatusEmbedConfig { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
@@ -15874,687 +14767,212 @@ namespace SergiyE.StatusPageIoApi {
   /// <br/>                  User will lose access to any pages omitted from the payload.
   /// </summary>
   public class PutOrganizationsOrganizationIdPermissions {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("pages", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("pages")]
     public Pages Pages { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a user's permissions
   /// </summary>
   public class Permissions {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("data", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("data")]
     public Data3 Data { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Get a list of users
   /// </summary>
   public class User {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// User identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Organization identifier
     /// </summary>
-    [JsonProperty("organization_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("organization_id")]
     public string OrganizationId { get; set; }
 
     /// <summary>
     /// Email address for the team member
     /// </summary>
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public string Email { get; set; }
 
     /// <summary>
     /// Password the team member uses to access the site
     /// </summary>
-    [JsonProperty("password", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("password")]
     public string Password { get; set; }
 
-    [JsonProperty("first_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("first_name")]
     public string FirstName { get; set; }
 
-    [JsonProperty("last_name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("last_name")]
     public string LastName { get; set; }
 
-    [JsonProperty("created_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("created_at")]
     public DateTimeOffset CreatedAt { get; set; }
 
-    [JsonProperty("updated_at", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("updated_at")]
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   /// <summary>
   /// Create a user
   /// </summary>
   public class PostOrganizationsOrganizationIdUsers {
-    private IDictionary<string, object> additionalProperties;
-
+    
     [JsonProperty("user", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
     public User User { get; set; } = new User();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public enum Type {
-    [System.Runtime.Serialization.EnumMember(Value = @"email")]
+    [EnumMember(Value = @"email")]
     Email = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"sms")]
+    [EnumMember(Value = @"sms")]
     Sms = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"slack")]
+    [EnumMember(Value = @"slack")]
     Slack = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"webhook")]
+    [EnumMember(Value = @"webhook")]
     Webhook = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"teams")]
+    [EnumMember(Value = @"teams")]
     Teams = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"integration_partner")]
+    [EnumMember(Value = @"integration_partner")]
     IntegrationPartner = 5,
   }
 
   public enum State {
-    [System.Runtime.Serialization.EnumMember(Value = @"active")]
+    [EnumMember(Value = @"active")]
     Active = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"unconfirmed")]
+    [EnumMember(Value = @"unconfirmed")]
     Unconfirmed = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"quarantined")]
+    [EnumMember(Value = @"quarantined")]
     Quarantined = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"all")]
+    [EnumMember(Value = @"all")]
     All = 3,
   }
 
   public enum SortField {
-    [System.Runtime.Serialization.EnumMember(Value = @"primary")]
+    [EnumMember(Value = @"primary")]
     Primary = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"created_at")]
+    [EnumMember(Value = @"created_at")]
     CreatedAt = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"quarantined_at")]
+    [EnumMember(Value = @"quarantined_at")]
     QuarantinedAt = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"relevance")]
+    [EnumMember(Value = @"relevance")]
     Relevance = 3,
   }
 
   public enum SortDirection {
-    [System.Runtime.Serialization.EnumMember(Value = @"asc")]
+    [EnumMember(Value = @"asc")]
     Asc = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"desc")]
+    [EnumMember(Value = @"desc")]
     Desc = 1,
   }
 
   public class Body {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// List of page access users to add to component
     /// </summary>
     [JsonProperty("page_access_user_ids", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> PageAccessUserIds { get; set; } =
+    public IEnumerable<string> PageAccessUserIds { get; set; } =
       new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Page2 {
-    private IDictionary<string, object> additionalProperties;
-
-    /// <summary>
-    /// Name of your page to be displayed
-    /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Name { get; set; }
-
-    /// <summary>
-    /// CNAME alias for your status page
-    /// </summary>
-    [JsonProperty("domain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Domain { get; set; }
-
-    /// <summary>
-    /// Subdomain at which to access your status page
-    /// </summary>
-    [JsonProperty("subdomain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Subdomain { get; set; }
-
-    /// <summary>
-    /// Website of your page.  Clicking on your statuspage image will link here.
-    /// </summary>
-    [JsonProperty("url", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Url { get; set; }
-
-    /// <summary>
-    /// The main template your statuspage will use
-    /// </summary>
-    [JsonProperty("branding", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-    public Page2Branding Branding { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_body_background_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBodyBackgroundColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssFontColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_light_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssLightFontColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_greens", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssGreens { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_yellows", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssYellows { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_oranges", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssOranges { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_reds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssReds { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_blues", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBlues { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_border_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBorderColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_graph_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssGraphColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_link_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssLinkColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_no_data", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssNoData { get; set; }
-
-    /// <summary>
-    /// Should your page hide itself from search engines
-    /// </summary>
-    [JsonProperty("hidden_from_search", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool HiddenFromSearch { get; set; }
-
-    [JsonProperty("viewers_must_be_team_members", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool ViewersMustBeTeamMembers { get; set; }
-
-    /// <summary>
-    /// Can your users subscribe to all notifications on the page
-    /// </summary>
-    [JsonProperty("allow_page_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowPageSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users subscribe to notifications for a single incident
-    /// </summary>
-    [JsonProperty("allow_incident_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowIncidentSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via email
-    /// </summary>
-    [JsonProperty("allow_email_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowEmailSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via SMS
-    /// </summary>
-    [JsonProperty("allow_sms_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowSmsSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
-    /// </summary>
-    [JsonProperty("allow_rss_atom_feeds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowRssAtomFeeds { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via Webhooks
-    /// </summary>
-    [JsonProperty("allow_webhook_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowWebhookSubscribers { get; set; }
-
-    /// <summary>
-    /// Allows you to customize the email address your page notifications come from
-    /// </summary>
-    [JsonProperty("notifications_from_email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string NotificationsFromEmail { get; set; }
-
-    /// <summary>
-    /// Timezone configured for your page
-    /// </summary>
-    [JsonProperty("time_zone", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string TimeZone { get; set; }
-
-    /// <summary>
-    /// Allows you to customize the footer appearing on your notification emails.  Accepts Markdown for formatting
-    /// </summary>
-    [JsonProperty("notifications_email_footer", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string NotificationsEmailFooter { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Page3 {
-    private IDictionary<string, object> additionalProperties;
-
-    /// <summary>
-    /// Name of your page to be displayed
-    /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Name { get; set; }
-
-    /// <summary>
-    /// CNAME alias for your status page
-    /// </summary>
-    [JsonProperty("domain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Domain { get; set; }
-
-    /// <summary>
-    /// Subdomain at which to access your status page
-    /// </summary>
-    [JsonProperty("subdomain", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Subdomain { get; set; }
-
-    /// <summary>
-    /// Website of your page.  Clicking on your statuspage image will link here.
-    /// </summary>
-    [JsonProperty("url", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Url { get; set; }
-
-    /// <summary>
-    /// The main template your statuspage will use
-    /// </summary>
-    [JsonProperty("branding", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-    public Page3Branding Branding { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_body_background_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBodyBackgroundColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssFontColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_light_font_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssLightFontColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_greens", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssGreens { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_yellows", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssYellows { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_oranges", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssOranges { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_reds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssReds { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_blues", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBlues { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_border_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssBorderColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_graph_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssGraphColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_link_color", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssLinkColor { get; set; }
-
-    /// <summary>
-    /// CSS Color
-    /// </summary>
-    [JsonProperty("css_no_data", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string CssNoData { get; set; }
-
-    /// <summary>
-    /// Should your page hide itself from search engines
-    /// </summary>
-    [JsonProperty("hidden_from_search", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool HiddenFromSearch { get; set; }
-
-    [JsonProperty("viewers_must_be_team_members", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool ViewersMustBeTeamMembers { get; set; }
-
-    /// <summary>
-    /// Can your users subscribe to all notifications on the page
-    /// </summary>
-    [JsonProperty("allow_page_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowPageSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users subscribe to notifications for a single incident
-    /// </summary>
-    [JsonProperty("allow_incident_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowIncidentSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via email
-    /// </summary>
-    [JsonProperty("allow_email_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowEmailSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via SMS
-    /// </summary>
-    [JsonProperty("allow_sms_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowSmsSubscribers { get; set; }
-
-    /// <summary>
-    /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
-    /// </summary>
-    [JsonProperty("allow_rss_atom_feeds", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowRssAtomFeeds { get; set; }
-
-    /// <summary>
-    /// Can your users choose to receive notifications via Webhooks
-    /// </summary>
-    [JsonProperty("allow_webhook_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool AllowWebhookSubscribers { get; set; }
-
-    /// <summary>
-    /// Allows you to customize the email address your page notifications come from
-    /// </summary>
-    [JsonProperty("notifications_from_email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string NotificationsFromEmail { get; set; }
-
-    /// <summary>
-    /// Timezone configured for your page
-    /// </summary>
-    [JsonProperty("time_zone", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string TimeZone { get; set; }
-
-    /// <summary>
-    /// Allows you to customize the footer appearing on your notification emails.  Accepts Markdown for formatting
-    /// </summary>
-    [JsonProperty("notifications_email_footer", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string NotificationsEmailFooter { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public enum ComponentStatus {
-    [System.Runtime.Serialization.EnumMember(Value = @"operational")]
+    [EnumMember(Value = @"operational")]
     Operational = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"under_maintenance")]
+    [EnumMember(Value = @"under_maintenance")]
     UnderMaintenance = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"degraded_performance")]
+    [EnumMember(Value = @"degraded_performance")]
     DegradedPerformance = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"partial_outage")]
+    [EnumMember(Value = @"partial_outage")]
     PartialOutage = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"major_outage")]
+    [EnumMember(Value = @"major_outage")]
     MajorOutage = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"")]
+    [EnumMember(Value = @"")]
     Empty = 5,
   }
 
   public enum PostPagesPageIdSubscribersUnsubscribeType {
-    [System.Runtime.Serialization.EnumMember(Value = @"email")]
+    [EnumMember(Value = @"email")]
     Email = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"sms")]
+    [EnumMember(Value = @"sms")]
     Sms = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"slack")]
+    [EnumMember(Value = @"slack")]
     Slack = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"webhook")]
+    [EnumMember(Value = @"webhook")]
     Webhook = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"teams")]
+    [EnumMember(Value = @"teams")]
     Teams = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"integration_partner")]
+    [EnumMember(Value = @"integration_partner")]
     IntegrationPartner = 5,
   }
 
   public enum PostPagesPageIdSubscribersUnsubscribeState {
-    [System.Runtime.Serialization.EnumMember(Value = @"active")]
+    [EnumMember(Value = @"active")]
     Active = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"unconfirmed")]
+    [EnumMember(Value = @"unconfirmed")]
     Unconfirmed = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"quarantined")]
+    [EnumMember(Value = @"quarantined")]
     Quarantined = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"all")]
+    [EnumMember(Value = @"all")]
     All = 3,
   }
 
   public enum PostPagesPageIdSubscribersReactivateType {
-    [System.Runtime.Serialization.EnumMember(Value = @"email")]
+    [EnumMember(Value = @"email")]
     Email = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"sms")]
+    [EnumMember(Value = @"sms")]
     Sms = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"slack")]
+    [EnumMember(Value = "slack")]
     Slack = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"webhook")]
+    [EnumMember(Value = "webhook")]
     Webhook = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"integration_partner")]
+    [EnumMember(Value = "integration_partner")]
     IntegrationPartner = 4,
   }
 
   public class Template {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Name of the template, as shown in the list on the "Templates" tab of the "Incidents" page
     /// </summary>
@@ -16579,728 +14997,346 @@ namespace SergiyE.StatusPageIoApi {
     /// <summary>
     /// Identifier of Template Group this template belongs to
     /// </summary>
-    [JsonProperty("group_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("group_id")]
     public string GroupId { get; set; }
 
     /// <summary>
     /// The status the incident or maintenance should transition to when selecting this template
     /// </summary>
-    [JsonProperty("update_status", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+    [JsonProperty("update_status")]
+    [JsonConverter(typeof(StringEnumConverter))]
     public TemplateUpdateStatus UpdateStatus { get; set; }
 
     /// <summary>
     /// Whether the "tweet update" checkbox should be selected when selecting this template
     /// </summary>
-    [JsonProperty("should_tweet", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("should_tweet")]
     public bool ShouldTweet { get; set; }
 
     /// <summary>
     /// Whether the "deliver notifications" checkbox should be selected when selecting this template
     /// </summary>
-    [JsonProperty("should_send_notifications", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("should_send_notifications")]
     public bool ShouldSendNotifications { get; set; }
 
     /// <summary>
     /// List of component_ids affected by this incident
     /// </summary>
-    [JsonProperty("component_ids", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public ICollection<string> ComponentIds { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+    [JsonProperty("component_ids")]
+    public IEnumerable<string> ComponentIds { get; set; }
   }
 
   public enum IncidentTemplateUpdateStatus {
-    [System.Runtime.Serialization.EnumMember(Value = @"investigating")]
+    [EnumMember(Value = "investigating")]
     Investigating = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"identified")]
+    [EnumMember(Value = "identified")]
     Identified = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"monitoring")]
+    [EnumMember(Value = "monitoring")]
     Monitoring = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"resolved")]
+    [EnumMember(Value = "resolved")]
     Resolved = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"scheduled")]
+    [EnumMember(Value = "scheduled")]
     Scheduled = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"in_progress")]
+    [EnumMember(Value = "in_progress")]
     InProgress = 5,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"verifying")]
+    [EnumMember(Value = "verifying")]
     Verifying = 6,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"completed")]
+    [EnumMember(Value = "completed")]
     Completed = 7,
   }
 
   public enum IncidentImpactOverride {
-    [System.Runtime.Serialization.EnumMember(Value = @"none")]
+    [EnumMember(Value = "none")]
     None = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"maintenance")]
+    [EnumMember(Value = "maintenance")]
     Maintenance = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"minor")]
+    [EnumMember(Value = "minor")]
     Minor = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"major")]
+    [EnumMember(Value = "major")]
     Major = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"critical")]
+    [EnumMember(Value = "critical")]
     Critical = 4,
   }
 
   public enum IncidentStatus {
-    [System.Runtime.Serialization.EnumMember(Value = @"investigating")]
+    [EnumMember(Value = "investigating")]
     Investigating = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"identified")]
+    [EnumMember(Value = "identified")]
     Identified = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"monitoring")]
+    [EnumMember(Value = "monitoring")]
     Monitoring = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"resolved")]
+    [EnumMember(Value = "resolved")]
     Resolved = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"scheduled")]
+    [EnumMember(Value = "scheduled")]
     Scheduled = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"in_progress")]
+    [EnumMember(Value = "in_progress")]
     InProgress = 5,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"verifying")]
+    [EnumMember(Value = "verifying")]
     Verifying = 6,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"completed")]
+    [EnumMember(Value = "completed")]
     Completed = 7,
   }
 
   public enum IncidentUpdateStatus {
-    [System.Runtime.Serialization.EnumMember(Value = @"investigating")]
+    [EnumMember(Value = "investigating")]
     Investigating = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"identified")]
+    [EnumMember(Value = "identified")]
     Identified = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"monitoring")]
+    [EnumMember(Value = "monitoring")]
     Monitoring = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"resolved")]
+    [EnumMember(Value = "resolved")]
     Resolved = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"scheduled")]
+    [EnumMember(Value = "scheduled")]
     Scheduled = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"in_progress")]
+    [EnumMember(Value = "in_progress")]
     InProgress = 5,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"verifying")]
+    [EnumMember(Value = "verifying")]
     Verifying = 6,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"completed")]
+    [EnumMember(Value = "completed")]
     Completed = 7,
   }
 
   public class Subscriber3 {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// The email address for creating Email subscribers.
     /// </summary>
-    [JsonProperty("email", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("email")]
     public string Email { get; set; }
 
     /// <summary>
     /// The two-character country where the phone number is located to use for the new SMS subscriber.
     /// </summary>
-    [JsonProperty("phone_country", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("phone_country")]
     public string PhoneCountry { get; set; }
 
     /// <summary>
     /// The phone number (as you would dial from the phone_country) to use for the new SMS subscriber.
     /// </summary>
-    [JsonProperty("phone_number", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("phone_number")]
     public string PhoneNumber { get; set; }
 
     /// <summary>
     /// If skip_confirmation_notification is true, the subscriber does not receive any notifications when their subscription changes. Email subscribers will be automatically opted in. This option is only available for paid pages. This option has no effect for trial customers.
     /// </summary>
-    [JsonProperty("skip_confirmation_notification",
-      Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("skip_confirmation_notification")]
     public bool SkipConfirmationNotification { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class Postmortem2 {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Body of Postmortem to create.
     /// </summary>
     [JsonProperty("body_draft", Required = Required.Always)]
     [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string BodyDraft { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class Postmortem3 {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Whether to notify Twitter followers
     /// </summary>
-    [JsonProperty("notify_twitter", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notify_twitter")]
     public bool NotifyTwitter { get; set; }
 
     /// <summary>
     /// Whether to notify e-mail subscribers
     /// </summary>
-    [JsonProperty("notify_subscribers", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("notify_subscribers")]
     public bool NotifySubscribers { get; set; }
 
     /// <summary>
     /// Custom postmortem tweet to publish
     /// </summary>
-    [JsonProperty("custom_tweet", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("custom_tweet")]
     public string CustomTweet { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class RelatedEvents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class ComponentGroup {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("components", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> Components { get; set; } =
-      new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonProperty("name", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-    public string Name { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class ComponentGroup2 {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("components", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> Components { get; set; } =
-      new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonProperty("name", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-    public string Name { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class ComponentGroup3 {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("components", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required]
-    public ICollection<string> Components { get; set; } =
-      new System.Collections.ObjectModel.Collection<string>();
-
-    [JsonProperty("name", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-    public string Name { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class RelatedEvents2 {
-    private IDictionary<string, object> additionalProperties;
 
     /// <summary>
     /// Component identifier
     /// </summary>
-    [JsonProperty("component_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("component_id")]
     public string ComponentId { get; set; }
 
     /// <summary>
     /// Related incidents
     /// </summary>
-    [JsonProperty("incidents", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incidents")]
     public Incidents Incidents { get; set; }
+  }
 
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
+  public class ComponentGroup {
+    
+    [JsonProperty("components", Required = Required.Always)]
+    [System.ComponentModel.DataAnnotations.Required]
+    public IEnumerable<string> Components { get; set; } =
+      new System.Collections.ObjectModel.Collection<string>();
+
+    [JsonProperty("name", Required = Required.Always)]
+    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+    public string Name { get; set; }
   }
 
   public class MetricId {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("timestamp", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    
+    [JsonProperty("timestamp")]
     public int Timestamp { get; set; }
 
-    [JsonProperty("value", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("value")]
     public float Value { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Metric2 {
-    private IDictionary<string, object> additionalProperties;
-
-    /// <summary>
-    /// Name of metric
-    /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Name { get; set; }
-
-    /// <summary>
-    /// Metric Display identifier used to look up the metric data from the provider
-    /// </summary>
-    [JsonProperty("metric_identifier", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string MetricIdentifier { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Metric3 {
-    private IDictionary<string, object> additionalProperties;
-
-    /// <summary>
-    /// Name of metric
-    /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Name { get; set; }
-
-    /// <summary>
-    /// Metric Display identifier used to look up the metric data from the provider
-    /// </summary>
-    [JsonProperty("metric_identifier", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string MetricIdentifier { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class Data {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Time to store the metric against
     /// </summary>
-    [JsonProperty("timestamp", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("timestamp")]
     public int Timestamp { get; set; }
 
-    [JsonProperty("value", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("value")]
     public float Value { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Data2 {
-    private IDictionary<string, object> additionalProperties;
-
-    [JsonProperty("timestamp", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public int Timestamp { get; set; }
-
-    [JsonProperty("value", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public float Value { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  public class Metric4 {
-    private IDictionary<string, object> additionalProperties;
-
-    /// <summary>
-    /// Name of metric
-    /// </summary>
-    [JsonProperty("name", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Name { get; set; }
-
-    /// <summary>
-    /// The identifier used to look up the metric data from the provider
-    /// </summary>
-    [JsonProperty("metric_identifier", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string MetricIdentifier { get; set; }
-
-    /// <summary>
-    /// The transform to apply to metric before pulling into Statuspage. One of: "average", "count", "max", "min", or "sum"
-    /// </summary>
-    [JsonProperty("transform", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Transform { get; set; }
-
-    /// <summary>
-    /// The Identifier for new relic application. Required in the case of NewRelic only
-    /// </summary>
-    [JsonProperty("application_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string ApplicationId { get; set; }
-
-    /// <summary>
-    /// Suffix to describe the units on the graph
-    /// </summary>
-    [JsonProperty("suffix", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string Suffix { get; set; }
-
-    /// <summary>
-    /// The lower bound of the y axis
-    /// </summary>
-    [JsonProperty("y_axis_min", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public int YAxisMin { get; set; }
-
-    /// <summary>
-    /// The upper bound of the y axis
-    /// </summary>
-    [JsonProperty("y_axis_max", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public int YAxisMax { get; set; }
-
-    /// <summary>
-    /// Should the values on the y axis be hidden on render
-    /// </summary>
-    [JsonProperty("y_axis_hidden", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool YAxisHidden { get; set; }
-
-    /// <summary>
-    /// Should the metric be displayed
-    /// </summary>
-    [JsonProperty("display", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public bool Display { get; set; }
-
-    /// <summary>
-    /// How many decimal places to render on the graph
-    /// </summary>
-    [JsonProperty("decimal_places", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public int DecimalPlaces { get; set; }
-
-    [JsonProperty("tooltip_description", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
-    public string TooltipDescription { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class Pages {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Page identifier
     /// </summary>
-    [JsonProperty("page_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_id")]
     public string PageId { get; set; }
 
     /// <summary>
     /// User has page configuration role. This field will only be present if the organization has Role Based Access Control.
     /// </summary>
-    [JsonProperty("page_configuration", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_configuration")]
     public bool PageConfiguration { get; set; }
 
     /// <summary>
     /// User has incident manager role. This field will only be present if the organization has Role Based Access Control.
     /// </summary>
-    [JsonProperty("incident_manager", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incident_manager")]
     public bool IncidentManager { get; set; }
 
     /// <summary>
     /// User has maintenance manager role. This field will only be present if the organization has Role Based Access Control.
     /// </summary>
-    [JsonProperty("maintenance_manager", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("maintenance_manager")]
     public bool MaintenanceManager { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class Data3 {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// User identifier
     /// </summary>
-    [JsonProperty("user_id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("user_id")]
     public string UserId { get; set; }
 
     /// <summary>
     /// Pages accessible by the user.
     /// </summary>
-    [JsonProperty("pages", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("pages")]
     public Pages Pages { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
-  public enum Page2Branding {
-    [System.Runtime.Serialization.EnumMember(Value = @"basic")]
+  public enum PageBranding {
+    [EnumMember(Value = "basic")]
     Basic = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"premium")]
-    Premium = 1,
-  }
-
-  public enum Page3Branding {
-    [System.Runtime.Serialization.EnumMember(Value = @"basic")]
-    Basic = 0,
-
-    [System.Runtime.Serialization.EnumMember(Value = @"premium")]
+    [EnumMember(Value = "premium")]
     Premium = 1,
   }
 
   public enum TemplateUpdateStatus {
-    [System.Runtime.Serialization.EnumMember(Value = @"investigating")]
+    [EnumMember(Value = "investigating")]
     Investigating = 0,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"identified")]
+    [EnumMember(Value = "identified")]
     Identified = 1,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"monitoring")]
+    [EnumMember(Value = "monitoring")]
     Monitoring = 2,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"resolved")]
+    [EnumMember(Value = "resolved")]
     Resolved = 3,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"scheduled")]
+    [EnumMember(Value = "scheduled")]
     Scheduled = 4,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"in_progress")]
+    [EnumMember(Value = "in_progress")]
     InProgress = 5,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"verifying")]
+    [EnumMember(Value = "verifying")]
     Verifying = 6,
 
-    [System.Runtime.Serialization.EnumMember(Value = @"completed")]
+    [EnumMember(Value = "completed")]
     Completed = 7,
   }
 
   public class Incidents {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Incident identifier
     /// </summary>
-    [JsonProperty("id", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("id")]
     public string Id { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
   }
 
   public class PageId {
-    private IDictionary<string, object> additionalProperties;
-
+    
     /// <summary>
     /// Whether or not user should have page configuration role. This field will only be present for pages with Role Based Access Control.
     /// </summary>
-    [JsonProperty("page_configuration", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("page_configuration")]
     public bool PageConfiguration { get; set; }
 
     /// <summary>
     /// Whether or not user should have incident manager role. This field will only be present for pages with Role Based Access Control.
     /// </summary>
-    [JsonProperty("incident_manager", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("incident_manager")]
     public bool IncidentManager { get; set; }
 
     /// <summary>
     /// Whether or not user should have maintenance manager role. This field will only be present for pages with Role Based Access Control.
     /// </summary>
-    [JsonProperty("maintenance_manager", Required = Required.DisallowNull,
-      NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("maintenance_manager")]
     public bool MaintenanceManager { get; set; }
-
-    [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties {
-      get {
-        return additionalProperties ??
-               (additionalProperties = new Dictionary<string, object>());
-      }
-      set { additionalProperties = value; }
-    }
-  }
-
-  internal class DateFormatConverter : Newtonsoft.Json.Converters.IsoDateTimeConverter {
-    public DateFormatConverter() {
-      DateTimeFormat = "yyyy-MM-dd";
-    }
   }
 
   public class ApiException : Exception {
