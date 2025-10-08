@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SergiyE.StatusPageIoApi</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Sergiy Egoshin</Authors>
+    <Version>$(AssemblyVersion)</Version>
+    <Copyright>$(AssemblyCopyright)</Copyright>
+    <Company>$(AssemblyCompany)</Company>
+    <Product>$(AssemblyProduct)</Product>
+    <PackageTags>SergiyE, StatusPageIoApi</PackageTags>
+    <Description>An implementation of StatusPage.io's API in C# / .NET</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>packageicon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/$(AssemblyCompany)/$(AssemblyProduct)</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/$(AssemblyCompany)/$(AssemblyProduct)</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>False</IncludeSymbols>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\packageicon.png" Pack="true" PackagePath="\" />
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.Serialization.Primitives">
+      <Version>4.3.0</Version>
+    </PackageReference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34902.65
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusPageIoApi", "StatusPageIoApi\StatusPageIoApi.csproj", "{5FFA5A24-54CE-4BDA-9FD6-D689058783AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5FFA5A24-54CE-4BDA-9FD6-D689058783AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FFA5A24-54CE-4BDA-9FD6-D689058783AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FFA5A24-54CE-4BDA-9FD6-D689058783AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FFA5A24-54CE-4BDA-9FD6-D689058783AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D02B46A4-019B-4C08-A3E4-FEEAB723B760}
+	EndGlobalSection
+EndGlobal
