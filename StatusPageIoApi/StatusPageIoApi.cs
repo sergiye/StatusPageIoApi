@@ -93,7 +93,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -223,7 +223,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -354,7 +354,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -734,7 +734,7 @@ namespace SergiyE.StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -821,7 +821,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7040,7 +7040,7 @@ namespace SergiyE.StatusPageIoApi {
               throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
             }
             default: {
-              var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+              var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
               throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
             }
           }
@@ -7133,7 +7133,7 @@ namespace SergiyE.StatusPageIoApi {
               throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
             }
             default: {
-              var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+              var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
               throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
             }
           }
@@ -7201,7 +7201,7 @@ namespace SergiyE.StatusPageIoApi {
             return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7269,7 +7269,7 @@ namespace SergiyE.StatusPageIoApi {
             return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7330,7 +7330,7 @@ namespace SergiyE.StatusPageIoApi {
 
           var status = (int)response.StatusCode;
           if (status != 201) {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7486,7 +7486,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7554,7 +7554,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7643,7 +7643,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7722,7 +7722,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7796,7 +7796,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("Unprocessable entity", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7866,7 +7866,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -7980,7 +7980,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -8092,7 +8092,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -8172,7 +8172,7 @@ namespace SergiyE.StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -8265,7 +8265,7 @@ namespace SergiyE.StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -8398,7 +8398,7 @@ namespace SergiyE.StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -8473,7 +8473,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -8561,7 +8561,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("Unprocessable entity", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -8635,7 +8635,7 @@ namespace SergiyE.StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status, objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
           }
         }
@@ -12683,7 +12683,7 @@ namespace SergiyE.StatusPageIoApi {
       if (response == null)
         return new ObjectResponseResult<T>(default(T), string.Empty);
 
-      var responseText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+      var responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
       try {
         var typedBody = JsonConvert.DeserializeObject<T>(responseText, JsonSerializerSettings);
         return new ObjectResponseResult<T>(typedBody, responseText);
