@@ -1,9 +1,9 @@
 # sergiye.StatusPageIoApi
 
-[![Nuget](https://img.shields.io/nuget/v/StatusPageIoApi?style=for-the-badge)](https://www.nuget.org/packages/StatusPageIoApi/)
-[![Nuget](https://img.shields.io/nuget/dt/StatusPageIoApi?label=nuget-downloads&style=for-the-badge)](https://www.nuget.org/packages/StatusPageIoApi/)
+[![Nuget](https://img.shields.io/nuget/v/SergiyE.StatusPageIoApi?style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
+[![Nuget](https://img.shields.io/nuget/dt/SergiyE.StatusPageIoApi?label=nuget-downloads&style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
 
-*StatusPageIoApi is an implementation of StatusPage.io's API in C# / .NET*
+*SergiyE.StatusPageIoApi is an implementation of StatusPage.io's API in C# / .NET*
 
 ## Developer information
 
