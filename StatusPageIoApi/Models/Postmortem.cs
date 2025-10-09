@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Revert Postmortem
-  /// </summary>
+
   public class Postmortem {
 
     /// <summary>

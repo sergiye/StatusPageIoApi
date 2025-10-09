@@ -2,9 +2,7 @@
 using Newtonsoft.Json.Converters;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get a list of templates
-  /// </summary>
+
   public class IncidentTemplate {
 
     /// <summary>
@@ -48,18 +46,18 @@ namespace SergiyE.StatusPageIoApi {
     /// </summary>
     [JsonProperty("update_status")]
     [JsonConverter(typeof(StringEnumConverter))]
-    public IncidentTemplateUpdateStatus UpdateStatus { get; set; }
+    public IncidentStatus? UpdateStatus { get; set; }
 
     /// <summary>
     /// Whether the "tweet update" checkbox should be selected when selecting this template
     /// </summary>
     [JsonProperty("should_tweet")]
-    public bool ShouldTweet { get; set; }
+    public bool? ShouldTweet { get; set; }
 
     /// <summary>
     /// Whether the "deliver notifications" checkbox should be selected when selecting this template
     /// </summary>
     [JsonProperty("should_send_notifications")]
-    public bool ShouldSendNotifications { get; set; }
+    public bool? ShouldSendNotifications { get; set; }
   }
 }

@@ -1,6 +1,12 @@
 ﻿using System.Runtime.Serialization;
 
 namespace SergiyE.StatusPageIoApi {
+  
+  /// <summary>
+  /// The incident status. 
+  /// For realtime incidents, valid values are investigating, identified, monitoring, and resolved. 
+  /// For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed.
+  /// </summary>
   public enum IncidentStatus {
     [EnumMember(Value = "investigating")]
     Investigating = 0,

@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Create a metric for a metric provider
-  /// </summary>
+
   public class Metric {
 
     /// <summary>
@@ -35,25 +33,25 @@ namespace SergiyE.StatusPageIoApi {
     /// Should the metric be displayed
     /// </summary>
     [JsonProperty("display")]
-    public bool Display { get; set; }
+    public bool? Display { get; set; }
 
     [JsonProperty("tooltip_description")]
     public string TooltipDescription { get; set; }
 
     [JsonProperty("backfilled")]
-    public bool Backfilled { get; set; }
+    public bool? Backfilled { get; set; }
 
     [JsonProperty("y_axis_min")]
-    public float YAxisMin { get; set; }
+    public float? YAxisMin { get; set; }
 
     [JsonProperty("y_axis_max")]
-    public float YAxisMax { get; set; }
+    public float? YAxisMax { get; set; }
 
     /// <summary>
     /// Should the values on the y axis be hidden on render
     /// </summary>
     [JsonProperty("y_axis_hidden")]
-    public bool YAxisHidden { get; set; }
+    public bool? YAxisHidden { get; set; }
 
     /// <summary>
     /// Suffix to describe the units on the graph
@@ -62,22 +60,22 @@ namespace SergiyE.StatusPageIoApi {
     public string Suffix { get; set; }
 
     [JsonProperty("decimal_places")]
-    public int DecimalPlaces { get; set; }
+    public int? DecimalPlaces { get; set; }
 
     [JsonProperty("most_recent_data_at")]
-    public DateTimeOffset MostRecentDataAt { get; set; }
+    public DateTimeOffset? MostRecentDataAt { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     [JsonProperty("last_fetched_at")]
-    public DateTimeOffset LastFetchedAt { get; set; }
+    public DateTimeOffset? LastFetchedAt { get; set; }
 
     [JsonProperty("backfill_percentage")]
-    public int BackfillPercentage { get; set; }
+    public int? BackfillPercentage { get; set; }
 
     [JsonProperty("reference_name")]
     public string ReferenceName { get; set; }

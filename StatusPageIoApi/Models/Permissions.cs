@@ -1,12 +1,25 @@
 ﻿using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get a user's permissions
-  /// </summary>
+
   public class Permissions {
 
     [JsonProperty("data")]
-    public Data3 Data { get; set; }
+    public PermissionsData Data { get; set; }
+  }
+
+  public class PermissionsData {
+
+    /// <summary>
+    /// User identifier
+    /// </summary>
+    [JsonProperty("user_id")]
+    public string UserId { get; set; }
+
+    /// <summary>
+    /// Pages accessible by the user.
+    /// </summary>
+    [JsonProperty("pages")]
+    public Pages Pages { get; set; }
   }
 }

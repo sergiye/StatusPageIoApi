@@ -21,7 +21,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Create a template</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentTemplate> PostIncidentTemplates(string pageId,
-      PostPagesPageIdIncidentTemplates body,
+      PostIncidentTemplate body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -232,7 +232,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Incident> PostIncidents(string pageId, PostPagesPageIdIncidents body,
+    public virtual async Task<Incident> PostIncidents(string pageId, PostIncident body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -967,7 +967,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Incident> PatchIncident(string pageId, string incidentId, PatchPagesPageIdIncidents body,
+    public virtual async Task<Incident> PatchIncident(string pageId, string incidentId, PatchIncident body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1049,7 +1049,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update an incident</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Incident> PutIncident(string pageId, string incidentId, PutPagesPageIdIncidents body,
+    public virtual async Task<Incident> PutIncident(string pageId, string incidentId, PutIncident body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1201,7 +1201,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PatchIncidentUpdate(string pageId, string incidentId,
-      string incidentUpdateId, PatchPagesPageIdIncidentsIncidentIdIncidentUpdates body,
+      string incidentUpdateId, PatchIncidentUpdate body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1284,7 +1284,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PutIncidentUpdate(string pageId, string incidentId,
-      string incidentUpdateId, PutPagesPageIdIncidentsIncidentIdIncidentUpdates body,
+      string incidentUpdateId, PutIncidentUpdates body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1364,7 +1364,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Create an incident subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PostIncidentSubscribers(string pageId, string incidentId,
-      PostPagesPageIdIncidentsIncidentIdSubscribers body,
+      PostIncidentSubscriber body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1827,7 +1827,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Create Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> PutIncidentPostmortem(
-      string pageId, string incidentId, PutPagesPageIdIncidentsIncidentIdPostmortem body,
+      string pageId, string incidentId, PutIncidentPostmortem body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1986,7 +1986,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Publish Postmortem</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Postmortem> PutIncidentPostmortemPublish(string pageId, string incidentId,
-      PutPagesPageIdIncidentsIncidentIdPostmortemPublish body,
+      PutIncidentPostmortemPublish body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

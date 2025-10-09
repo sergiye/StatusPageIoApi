@@ -21,7 +21,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Data Point is submitted and is currently being added to the metrics</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricAddResponse> PostMetricsData(
-      string pageId, PostPagesPageIdMetricsData body,
+      string pageId, PostMetricsData body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -252,7 +252,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PatchMetric(string pageId,
-      string metricId, PatchPagesPageIdMetrics body, CancellationToken cancellationToken = default(CancellationToken)) {
+      string metricId, PatchMetric body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -367,7 +367,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PutMetric(string pageId,
-      string metricId, PutPagesPageIdMetrics body, CancellationToken cancellationToken = default(CancellationToken)) {
+      string metricId, PutMetrics body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -764,7 +764,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add data to a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<SingleMetricAddResponse> PostMetricData(string pageId, string metricId,
-      PostPagesPageIdMetricsMetricIdData body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PostMetricData body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -988,7 +988,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<MetricsProvider> PostMetricsProviders(string pageId, PostPagesPageIdMetricsProviders body,
+    public virtual async Task<MetricsProvider> PostMetricsProviders(string pageId, PostMetricsProvider body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1231,7 +1231,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> PatchMetricsProvider(string pageId, string metricsProviderId,
-      PatchPagesPageIdMetricsProviders body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PatchMetricsProvider body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1346,7 +1346,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<MetricsProvider> PutMetricsProvider(string pageId, string metricsProviderId,
-      PutPagesPageIdMetricsProviders body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PutMetricsProvider body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1697,7 +1697,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Create a metric for a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Metric> PostMetricsProviderMetrics(string pageId, string metricsProviderId,
-      PostPagesPageIdMetricsProvidersMetricsProviderIdMetrics body,
+      PostMetricsProviderMetric body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

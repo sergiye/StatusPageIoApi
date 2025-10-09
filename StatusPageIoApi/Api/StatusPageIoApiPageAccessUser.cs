@@ -23,7 +23,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Add a page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PostPageAccessUsers(string pageId, PostPagesPageIdPageAccessUsers body,
+    public virtual async Task<PageAccessUser> PostPageAccessUsers(string pageId, PostPageAccessUser body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -831,7 +831,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PatchPageAccessUserComponents(string pageId, string pageAccessUserId,
-      PatchPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
+      PatchPageAccessUserComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -950,7 +950,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PutPageAccessUserComponents(string pageId, string pageAccessUserId,
-      PutPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
+      PutPageAccessUserComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1070,7 +1070,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser>
       PostPageAccessUserComponents(string pageId, string pageAccessUserId,
-        PostPagesPageIdPageAccessUsersPageAccessUserIdComponents body,
+        PostPageAccessUserComponents body,
         CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1189,7 +1189,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Remove components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> DeletePageAccessUserComponents(string pageId, string pageAccessUserId,
-      DeletePagesPageIdPageAccessUsersPageAccessUserIdComponents body,
+      DeletePageAccessUserComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1550,7 +1550,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PatchPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      PatchPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
+      PatchPageAccessUserMetrics body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1669,7 +1669,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PutPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      PutPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
+      PutPageAccessUserMetrics body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1788,7 +1788,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Replace metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> PostPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      PostPagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
+      PostPageAccessUserMetrics body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1907,7 +1907,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Delete metrics for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessUser> DeletePageAccessUserMetrics(string pageId, string pageAccessUserId,
-      DeletePagesPageIdPageAccessUsersPageAccessUserIdMetrics body,
+      DeletePageAccessUserMetrics body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

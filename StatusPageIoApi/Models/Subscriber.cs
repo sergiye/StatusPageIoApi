@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get an incident subscriber
-  /// </summary>
+
   public class Subscriber {
 
     /// <summary>
@@ -17,7 +15,7 @@ namespace SergiyE.StatusPageIoApi {
     /// If this is true, do not notify the user with changes to their subscription.
     /// </summary>
     [JsonProperty("skip_confirmation_notification")]
-    public bool SkipConfirmationNotification { get; set; }
+    public bool? SkipConfirmationNotification { get; set; }
 
     /// <summary>
     /// The communication mode of the subscriber.
@@ -71,13 +69,13 @@ namespace SergiyE.StatusPageIoApi {
     /// The timestamp when the subscriber was quarantined due to an issue reaching them.
     /// </summary>
     [JsonProperty("quarantined_at")]
-    public DateTimeOffset QuarantinedAt { get; set; }
+    public DateTimeOffset? QuarantinedAt { get; set; }
 
     /// <summary>
     /// The timestamp when a quarantined subscriber will be purged (unsubscribed).
     /// </summary>
     [JsonProperty("purge_at")]
-    public DateTimeOffset PurgeAt { get; set; }
+    public DateTimeOffset? PurgeAt { get; set; }
 
     /// <summary>
     /// The components for which the subscriber has elected to receive updates.
@@ -92,7 +90,7 @@ namespace SergiyE.StatusPageIoApi {
     public string PageAccessUserId { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     /// <summary>
     /// The code of the page access user to which the subscriber belongs.

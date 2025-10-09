@@ -21,7 +21,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PostComponents(string pageId, PostPagesPageIdComponents body,
+    public virtual async Task<Component> PostComponents(string pageId, PostComponent body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -176,7 +176,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PatchComponent(string pageId, string componentId,
-      PatchPagesPageIdComponents body,
+      PatchComponent body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -290,7 +290,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutPagesPageIdComponents body,
+    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1056,7 +1056,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PostComponentGroups(string pageId, PostPagesPageIdComponentGroups body,
+    public virtual async Task<GroupComponent> PostComponentGroups(string pageId, PostComponentGroup body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1288,7 +1288,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<GroupComponent> PatchComponentGroup(string pageId, string id,
-      PatchPagesPageIdComponentGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PatchComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1402,7 +1402,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<GroupComponent> PutComponentGroup(string pageId, string id,
-      PutPagesPageIdComponentGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PutComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1711,7 +1711,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get uptime data for a component group that has uptime showcase enabled for at least one component.</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ComponentGroupUptime> GetComponentGroupUptime(string pageId, string id,
+    public virtual async Task<ComponentUptime> GetComponentGroupUptime(string pageId, string id,
       bool? skipRelatedEvents, DateTimeOffset? start = null, DateTimeOffset? end = null,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
@@ -1771,7 +1771,7 @@ namespace SergiyE.StatusPageIoApi {
             var status = (int) response.StatusCode;
             if (status == 200) {
               var objectResponse =
-                await ReadObjectResponseAsync<ComponentGroupUptime>(response, headers,
+                await ReadObjectResponseAsync<ComponentUptime>(response, headers,
                   cancellationToken).ConfigureAwait(false);
               if (objectResponse.Object == null) {
                 throw new ApiException("Response was null which was not expected.", status,

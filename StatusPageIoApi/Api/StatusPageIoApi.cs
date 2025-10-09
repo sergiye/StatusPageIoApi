@@ -143,7 +143,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update status embed config settings</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<StatusEmbedConfig> PatchStatusEmbedConfig(
-      string pageId, PatchPagesPageIdStatusEmbedConfig body,
+      string pageId, PatchStatusEmbedConfig body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -276,7 +276,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update status embed config settings</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<StatusEmbedConfig> PutStatusEmbedConfig(
-      string pageId, PutPagesPageIdStatusEmbedConfig body,
+      string pageId, PutStatusEmbedConfig body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

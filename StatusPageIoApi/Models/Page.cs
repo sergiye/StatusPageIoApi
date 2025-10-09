@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get a page
-  /// </summary>
+
   public class Page {
     /// <summary>
     /// Page identifier
@@ -16,13 +14,13 @@ namespace SergiyE.StatusPageIoApi {
     /// Timestamp the record was created
     /// </summary>
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     /// <summary>
     /// Timestamp the record was last updated
     /// </summary>
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// Name of your page to be displayed
@@ -40,7 +38,7 @@ namespace SergiyE.StatusPageIoApi {
     /// The main template your statuspage will use
     /// </summary>
     [JsonProperty("branding")]
-    public PageBranding Branding { get; set; }
+    public PageBranding? Branding { get; set; }
 
     /// <summary>
     /// Subdomain at which to access your status page
@@ -67,43 +65,43 @@ namespace SergiyE.StatusPageIoApi {
     /// Should your page hide itself from search engines
     /// </summary>
     [JsonProperty("hidden_from_search")]
-    public bool HiddenFromSearch { get; set; }
+    public bool? HiddenFromSearch { get; set; }
 
     /// <summary>
     /// Can your users subscribe to all notifications on the page
     /// </summary>
     [JsonProperty("allow_page_subscribers")]
-    public bool AllowPageSubscribers { get; set; }
+    public bool? AllowPageSubscribers { get; set; }
 
     /// <summary>
     /// Can your users subscribe to notifications for a single incident
     /// </summary>
     [JsonProperty("allow_incident_subscribers")]
-    public bool AllowIncidentSubscribers { get; set; }
+    public bool? AllowIncidentSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via email
     /// </summary>
     [JsonProperty("allow_email_subscribers")]
-    public bool AllowEmailSubscribers { get; set; }
+    public bool? AllowEmailSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via SMS
     /// </summary>
     [JsonProperty("allow_sms_subscribers")]
-    public bool AllowSmsSubscribers { get; set; }
+    public bool? AllowSmsSubscribers { get; set; }
 
     /// <summary>
     /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
     /// </summary>
     [JsonProperty("allow_rss_atom_feeds")]
-    public bool AllowRssAtomFeeds { get; set; }
+    public bool? AllowRssAtomFeeds { get; set; }
 
     /// <summary>
     /// Can your users choose to receive notifications via Webhooks
     /// </summary>
     [JsonProperty("allow_webhook_subscribers")]
-    public bool AllowWebhookSubscribers { get; set; }
+    public bool? AllowWebhookSubscribers { get; set; }
 
     /// <summary>
     /// Allows you to customize the email address your page notifications come from
@@ -118,13 +116,13 @@ namespace SergiyE.StatusPageIoApi {
     public string NotificationsEmailFooter { get; set; }
 
     [JsonProperty("activity_score")]
-    public float ActivityScore { get; set; }
+    public float? ActivityScore { get; set; }
 
     [JsonProperty("twitter_username")]
     public string TwitterUsername { get; set; }
 
     [JsonProperty("viewers_must_be_team_members")]
-    public bool ViewersMustBeTeamMembers { get; set; }
+    public bool? ViewersMustBeTeamMembers { get; set; }
 
     [JsonProperty("ip_restrictions")]
     public string IpRestrictions { get; set; }

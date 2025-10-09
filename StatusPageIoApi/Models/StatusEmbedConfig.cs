@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Update status embed config settings
-  /// </summary>
+
   public class StatusEmbedConfig {
 
     /// <summary>

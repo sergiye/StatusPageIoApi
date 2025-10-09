@@ -3,9 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Update a previous incident update
-  /// </summary>
+
   public class IncidentUpdate {
 
     /// <summary>
@@ -36,7 +34,7 @@ namespace SergiyE.StatusPageIoApi {
     /// The timestamp when the incident update was created at.
     /// </summary>
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     /// <summary>
     /// An optional customized tweet message for incident postmortem.
@@ -48,20 +46,20 @@ namespace SergiyE.StatusPageIoApi {
     /// Controls whether to delivery notifications.
     /// </summary>
     [JsonProperty("deliver_notifications")]
-    public bool DeliverNotifications { get; set; }
+    public bool? DeliverNotifications { get; set; }
 
     /// <summary>
     /// Timestamp when incident update is happened.
     /// </summary>
     [JsonProperty("display_at")]
-    public DateTimeOffset DisplayAt { get; set; }
+    public DateTimeOffset? DisplayAt { get; set; }
 
     /// <summary>
     /// The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed.
     /// </summary>
     [JsonProperty("status")]
     [JsonConverter(typeof(StringEnumConverter))]
-    public IncidentUpdateStatus Status { get; set; }
+    public IncidentStatus? Status { get; set; }
 
     /// <summary>
     /// Tweet identifier associated to this incident update.
@@ -73,18 +71,18 @@ namespace SergiyE.StatusPageIoApi {
     /// The timestamp when twitter updated at.
     /// </summary>
     [JsonProperty("twitter_updated_at")]
-    public DateTimeOffset TwitterUpdatedAt { get; set; }
+    public DateTimeOffset? TwitterUpdatedAt { get; set; }
 
     /// <summary>
     /// The timestamp when the incident update is updated.
     /// </summary>
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// Controls whether to create twitter update.
     /// </summary>
     [JsonProperty("wants_twitter_update")]
-    public bool WantsTwitterUpdate { get; set; }
+    public bool? WantsTwitterUpdate { get; set; }
   }
 }

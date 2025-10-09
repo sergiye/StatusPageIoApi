@@ -7,6 +7,6 @@ namespace SergiyE.StatusPageIoApi {
   public class SingleMetricAddResponse {
 
     [JsonProperty("data")]
-    public Data Data { get; set; }
+    public MetricData Data { get; set; }
   }
 }

@@ -16,10 +16,43 @@
 string apiKey = <your-api-key>;
 StatusPageIoApi apiClient = new StatusPageIoApi(apiKey);
 Page[] pages = await apiClient.GetPages(cancellationToken);
+foreach (Page page in pages) {
+  Component[] components = await apiClient.GetPagesComponents(page.Id, cancellationToken: cancellationToken);
+  foreach(Component component in components) {
+    if (component.Status == ComponentStatus.Operational) continue;
+    component.Status = ComponentStatus.Operational;
+    await apiClient.PatchComponent(page.Id, component.Id, new PatchComponent {
+      Component = new Component {
+        Status = ComponentStatus.Operational,
+      }
+    }, cancellationToken: cancellationToken);
 
-string pageId = <your-pageId>;
-Component[] components = await apiClient.GetPagesComponents(pageId, cancellationToken: cancellationToken);
-Incident[] incidents = await apiClient.GetIncidents(pageId, cancellationToken: cancellationToken);
+  }
+  Incident[] incidents = await apiClient.GetIncidents(pageId, cancellationToken: cancellationToken);
+  foreach (Incident incident in incidents) {
+    switch (incident.Status) {
+      case IncidentStatus.Resolved:
+      case IncidentStatus.Completed:
+        continue;
+      case IncidentStatus.Investigating:
+      case IncidentStatus.Identified:
+      case IncidentStatus.Monitoring:
+        incident.Status = IncidentStatus.Resolved;
+        break;
+      case IncidentStatus.Scheduled:
+      case IncidentStatus.InProgress:
+      case IncidentStatus.Verifying:
+        incident.Status = IncidentStatus.Completed;
+        break;
+    }
+
+    await apiClient.PatchIncident(page.Id, incident.Id, new PatchIncident {
+      Incident = new Incident {
+        Status = incident.Status,
+      }
+    }, cancellationToken: cancellationToken);
+  }
+}
 ```
 
 

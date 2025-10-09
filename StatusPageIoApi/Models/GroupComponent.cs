@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get a component group
-  /// </summary>
+
   public class GroupComponent {
 
     /// <summary>
@@ -29,9 +27,9 @@ namespace SergiyE.StatusPageIoApi {
     public string Position { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
   }
 }

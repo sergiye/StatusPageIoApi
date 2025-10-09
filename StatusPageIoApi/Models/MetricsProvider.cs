@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Delete a metric provider
-  /// </summary>
+
   public class MetricsProvider {
 
     /// <summary>
@@ -20,22 +18,22 @@ namespace SergiyE.StatusPageIoApi {
     public string Type { get; set; }
 
     [JsonProperty("disabled")]
-    public bool Disabled { get; set; }
+    public bool? Disabled { get; set; }
 
     [JsonProperty("metric_base_uri")]
     public string MetricBaseUri { get; set; }
 
     [JsonProperty("last_revalidated_at")]
-    public DateTimeOffset LastRevalidatedAt { get; set; }
+    public DateTimeOffset? LastRevalidatedAt { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     [JsonProperty("page_id")]
-    public int PageId { get; set; }
+    public int? PageId { get; set; }
 
     /// <summary>
     /// Required by the Librato metrics provider.

@@ -24,7 +24,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Resend confirmations to a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task PostSubscribersResendConfirmation(string pageId,
-      PostPagesPageIdSubscribersResendConfirmation body,
+      PostSubscribersResendConfirmation body,
       CancellationToken cancellationToken = default(CancellationToken)) {
 
       if (pageId == null)
@@ -139,7 +139,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Unsubscribe a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task PostSubscribersUnsubscribe(string pageId, PostPagesPageIdSubscribersUnsubscribe body,
+    public virtual async Task PostSubscribersUnsubscribe(string pageId, PostSubscribersUnsubscribe body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -253,7 +253,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Reactivate a list of quarantined subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task PostSubscribersReactivate(string pageId, PostPagesPageIdSubscribersReactivate body,
+    public virtual async Task PostSubscribersReactivate(string pageId, PostSubscribersReactivate body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -470,7 +470,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="state">If this is present, only count subscribers in this state. Specify state "all" to count subscribers in any states.</param>
     /// <returns>Get a count of subscribers by type</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<SubscriberCountByType> GetSubscribersCount(string pageId, Type? type, State? state,
+    public virtual async Task<SubscriberCountByType> GetSubscribersCount(string pageId, SubscriberType? type, SubscriberState? state,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -695,7 +695,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a subscriber. Not applicable for Slack subscribers.</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Subscriber> PostSubscribers(string pageId, PostPagesPageIdSubscribers body,
+    public virtual async Task<Subscriber> PostSubscribers(string pageId, PostSubscriber body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -835,8 +835,8 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="sortDirection">The sort direction of the listing.</param>
     /// <returns>Get a list of subscribers</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Subscriber[]> GetSubscribers(string pageId, string q = null, Type? type = null,
-      State? state = null, int? limit = null, int? page = null, SortField? sortField = null,
+    public virtual async Task<Subscriber[]> GetSubscribers(string pageId, string q = null, SubscriberType? type = null,
+      SubscriberState? state = null, int? limit = null, int? page = null, SortField? sortField = null,
       SortDirection? sortDirection = null, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1206,7 +1206,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PatchSubscriber(string pageId, string subscriberId,
-      PatchPagesPageIdSubscribers body,
+      PatchSubscriber body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

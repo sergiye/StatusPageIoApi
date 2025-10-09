@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Get a histogram of subscribers by type and then state
-  /// </summary>
+
   public class SubscriberCountByTypeAndState {
 
     [JsonProperty("email")]

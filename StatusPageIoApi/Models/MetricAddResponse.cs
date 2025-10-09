@@ -10,6 +10,6 @@ namespace SergiyE.StatusPageIoApi {
     /// Metric identifier to add data to
     /// </summary>
     [JsonProperty("metric_id")]
-    public MetricId[] MetricId { get; set; }
+    public MetricData[] MetricId { get; set; }
   }
 }

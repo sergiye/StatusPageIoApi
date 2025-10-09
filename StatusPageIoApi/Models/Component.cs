@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Add page access groups to a component
-  /// </summary>
+
   public class Component {
 
     /// <summary>

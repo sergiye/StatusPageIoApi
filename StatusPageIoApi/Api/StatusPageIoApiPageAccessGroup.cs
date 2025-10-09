@@ -142,7 +142,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessGroup> PostPageAccessGroups(string pageId, PostPagesPageIdPageAccessGroups body,
+    public virtual async Task<PageAccessGroup> PostPageAccessGroups(string pageId, PostPageAccessGroup body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -388,7 +388,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PatchPageAccessGroup(string pageId, string pageAccessGroupId,
-      PatchPagesPageIdPageAccessGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PatchPageAccessGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -506,7 +506,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Update a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PutPageAccessGroup(string pageId, string pageAccessGroupId,
-      PutPagesPageIdPageAccessGroups body, CancellationToken cancellationToken = default(CancellationToken)) {
+      PutPageAccessGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -733,7 +733,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add components to page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PatchPageAccessGroupComponents(string pageId, string pageAccessGroupId,
-      PatchPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
+      PatchPageAccessGroupComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -852,7 +852,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Add components to page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PutPageAccessGroupComponents(string pageId, string pageAccessGroupId,
-      PutPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
+      PutPageAccessGroupComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -971,7 +971,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Replace components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> PostPageAccessGroupComponents(string pageId, string pageAccessGroupId,
-      PostPagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
+      PostPageAccessGroupComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1090,7 +1090,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <returns>Delete components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<PageAccessGroup> DeletePageAccessGroupComponents(string pageId, string pageAccessGroupId,
-      DeletePagesPageIdPageAccessGroupsPageAccessGroupIdComponents body,
+      DeletePageAccessGroupComponents body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

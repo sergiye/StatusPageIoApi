@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Delete metric for page access user
-  /// </summary>
+
   public class PageAccessUser {
 
     /// <summary>
@@ -32,12 +30,12 @@ namespace SergiyE.StatusPageIoApi {
     public string[] PageAccessGroupIds { get; set; }
 
     [JsonProperty("subscribe_to_components")]
-    public bool SubscribeToComponents { get; set; }
+    public bool? SubscribeToComponents { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
   }
 }

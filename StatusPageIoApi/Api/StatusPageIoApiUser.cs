@@ -354,7 +354,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<User> PostOrganizationUsers(string organizationId, PostOrganizationsOrganizationIdUsers body, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<User> PostOrganizationUsers(string organizationId, PostOrganizationUser body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (organizationId == null)
         throw new ArgumentNullException(nameof(organizationId));
 

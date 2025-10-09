@@ -10,7 +10,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>SergiyE.StatusPageIoApi</AssemblyName>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
     <AssemblyTitle>SergiyE.StatusPageIoApi</AssemblyTitle>
     <AssemblyProduct>StatusPageIoApi</AssemblyProduct>
     <AssemblyCompany>SergiyE</AssemblyCompany>
@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
 </Project>
