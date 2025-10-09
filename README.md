@@ -15,24 +15,35 @@
 ```c#
 string apiKey = <your-api-key>;
 StatusPageIoApi apiClient = new StatusPageIoApi(apiKey);
+
 Page[] pages = await apiClient.GetPages(cancellationToken);
 foreach (Page page in pages) {
-  Component[] components = await apiClient.GetPagesComponents(page.Id, cancellationToken: cancellationToken);
-  foreach(Component component in components) {
-    if (component.Status == ComponentStatus.Operational) continue;
-    component.Status = ComponentStatus.Operational;
-    await apiClient.PatchComponent(page.Id, component.Id, new PatchComponent {
-      Component = new Component {
-        Status = ComponentStatus.Operational,
-      }
-    }, cancellationToken: cancellationToken);
 
-  }
+  //get all components on page
+  Component[] components = await apiClient.GetPagesComponents(page.Id, cancellationToken: cancellationToken);
+
+  //create new incident
+  Incident newIncident = await apiClient.PostIncidents(pageId, new PostIncident { 
+    Incident = new CreateIncident {
+      Name = "The system has failed.",
+      Status = IncidentStatus.Identified,
+      DeliverNotifications = false,
+      Components = components.ToDictionary(c => c.Id, c => ComponentStatus.UnderMaintenance),
+      ComponentIds = components.Select(c => c.Id).ToArray(),
+      ImpactOverride = IncidentImpactOverride.Critical,
+    },
+  }, cancellationToken: cancellationToken);
+
+  //close all page incidents
   Incident[] incidents = await apiClient.GetIncidents(pageId, cancellationToken: cancellationToken);
   foreach (Incident incident in incidents) {
     switch (incident.Status) {
       case IncidentStatus.Resolved:
       case IncidentStatus.Completed:
+        //remove old resolved incident
+        if (incident.ResolvedAt.HasValue && incident.ResolvedAt.Value.AddHours(1) < DateTime.UtcNow) {
+          await apiClient.DeleteIncident(page.Id, incident.Id, cancellationToken);
+        }
         continue;
       case IncidentStatus.Investigating:
       case IncidentStatus.Identified:
@@ -44,6 +55,8 @@ foreach (Page page in pages) {
       case IncidentStatus.Verifying:
         incident.Status = IncidentStatus.Completed;
         break;
+      case null:
+        continue;
     }
 
     await apiClient.PatchIncident(page.Id, incident.Id, new PatchIncident {
@@ -52,6 +65,19 @@ foreach (Page page in pages) {
       }
     }, cancellationToken: cancellationToken);
   }
+
+  //patch component statuses
+  components = await apiClient.GetPagesComponents(page.Id, cancellationToken: cancellationToken);
+  foreach (Component component in components) {
+    if (component.Status == ComponentStatus.Operational) continue;
+    component.Status = ComponentStatus.Operational;
+    await apiClient.PatchComponent(page.Id, component.Id, new PatchComponent {
+      Component = new Component {
+        Status = ComponentStatus.Operational,
+      }
+    }, cancellationToken: cancellationToken);
+  }
+
 }
 ```
 

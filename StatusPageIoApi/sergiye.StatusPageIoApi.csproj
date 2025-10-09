@@ -22,8 +22,8 @@
     <Copyright>$(AssemblyCopyright)</Copyright>
     <Company>$(AssemblyCompany)</Company>
     <Product>$(AssemblyProduct)</Product>
-    <PackageTags>SergiyE, StatusPageIoApi</PackageTags>
-    <Description>An implementation of StatusPage.io's API in C# / .NET</Description>
+    <PackageTags>statuspage.io, statuspage, atlassian</PackageTags>
+    <Description>StatusPage.io API client library</Description>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>packageicon.png</PackageIcon>
     <RepositoryUrl>https://github.com/$(AssemblyCompany)/$(AssemblyProduct)</RepositoryUrl>
