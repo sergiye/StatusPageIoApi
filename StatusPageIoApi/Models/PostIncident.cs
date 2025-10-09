@@ -7,6 +7,6 @@ namespace SergiyE.StatusPageIoApi {
   public class PostIncident {
 
     [JsonProperty("incident")]
-    public Incident Incident { get; set; }
+    public CreateIncident Incident { get; set; }
   }
 }

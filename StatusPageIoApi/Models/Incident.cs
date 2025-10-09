@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -13,7 +15,7 @@ namespace SergiyE.StatusPageIoApi {
     public string Id { get; set; }
 
     /// <summary>
-    /// Incident components
+    /// Map of status changes to apply to affected components
     /// </summary>
     [JsonProperty("components")]
     public Component[] Components { get; set; }
@@ -200,6 +202,89 @@ namespace SergiyE.StatusPageIoApi {
     /// </summary>
     [JsonProperty("reminder_intervals")]
     public string ReminderIntervals { get; set; }
+  }
+
+  public class CreateIncident {
+
+    /// <summary>
+    /// Incident Name. There is a maximum limit of 255 characters.
+    /// </summary>
+    [JsonProperty("name")]
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The incident status. For realtime incidents, valid values are investigating, identified, monitoring, and resolved. For scheduled incidents, valid values are scheduled, in_progress, verifying, and completed.
+    /// </summary>
+    [JsonProperty("status")]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public IncidentStatus? Status { get; set; }
+
+    /// <summary>
+    /// value to override calculated impact value
+    /// </summary>
+    [JsonProperty("impact_override")]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public IncidentImpactOverride? ImpactOverride { get; set; }
+
+    /// <summary>
+    /// The timestamp the incident is scheduled for.
+    /// </summary>
+    [JsonProperty("scheduled_for")]
+    public DateTimeOffset? ScheduledFor { get; set; }
+
+    /// <summary>
+    /// The timestamp the incident is scheduled until.
+    /// </summary>
+    [JsonProperty("scheduled_until")]
+    public DateTimeOffset? ScheduledUntil { get; set; }
+
+    /// <summary>
+    /// Controls whether change components status to under_maintenance once scheduled maintenance is in progress.
+    /// </summary>
+    [JsonProperty("auto_transition_to_maintenance_state")]
+    public bool? AutoTransitionToMaintenanceState { get; set; }
+
+    /// <summary>
+    /// Controls whether change components status to operational once scheduled maintenance completes.
+    /// </summary>
+    [JsonProperty("auto_transition_to_operational_state")]
+    public bool? AutoTransitionToOperationalState { get; set; }
+
+    /// <summary>
+    /// Controls whether the incident is scheduled to automatically change to in progress.
+    /// </summary>
+    [JsonProperty("scheduled_auto_in_progress")]
+    public bool? ScheduledAutoInProgress { get; set; }
+
+    /// <summary>
+    /// Controls whether the incident is scheduled to automatically change to complete.
+    /// </summary>
+    [JsonProperty("scheduled_auto_completed")]
+    public bool? ScheduledAutoCompleted { get; set; }
+
+    /// <summary>
+    /// Controls whether send notification when scheduled maintenances auto transition to started.
+    /// </summary>
+    [JsonProperty("auto_transition_deliver_notifications_at_start")]
+    public bool? AutoTransitionDeliverNotificationsAtStart { get; set; }
+
+    /// <summary>
+    /// Controls whether send notification when scheduled maintenances auto transition to completed.
+    /// </summary>
+    [JsonProperty("auto_transition_deliver_notifications_at_end")]
+    public bool? AutoTransitionDeliverNotificationsAtEnd { get; set; }
+
+    /// <summary>
+    /// Custom reminder intervals for unresolved/open incidents. Not applicable for &lt;strong&gt;Scheduled maintenance&lt;/strong&gt;&lt;br&gt;There are 4 possible states for reminder_intervals:&lt;br&gt;&lt;strong&gt;DEFAULT:&lt;/strong&gt; NULL, representing a default behavior with intervals [3, 6, 12, 24].&lt;br&gt;&lt;strong&gt;AFTER:&lt;/strong&gt; A serialized array of strictly increasing intervals, each integer ranges from [1-24] (inclusive). Ex "[1, 5, 7, 10]"&lt;br&gt;&lt;strong&gt;EVERY:&lt;/strong&gt; An integer in the range [1-24] as a string, representing equal intervals. Ex "4" for [4, 8, 12, 16, 20, 24]&lt;br&gt;&lt;strong&gt;OFF:&lt;/strong&gt; A serialized empty array, for example, "[]", meaning no reminder notifications will be sent.
+    /// </summary>
+    [JsonProperty("reminder_intervals")]
+    public string ReminderIntervals { get; set; }
+    
+    /// <summary>
+    /// Metadata attached to the incident. Top level values must be objects.
+    /// </summary>
+    [JsonProperty("metadata")]
+    public object Metadata { get; set; }
 
     /// <summary>
     /// Deliver notifications to subscribers if this is true. If this is false, create an incident without notifying customers.
@@ -248,6 +333,12 @@ namespace SergiyE.StatusPageIoApi {
     /// </summary>
     [JsonProperty("body")]
     public string Body { get; set; }
+    
+    /// <summary>
+    /// Map of status changes to apply to affected components
+    /// </summary>
+    [JsonProperty("components")]
+    public Dictionary<string, ComponentStatus> Components { get; set; }
 
     /// <summary>
     /// List of component_ids affected by this incident
