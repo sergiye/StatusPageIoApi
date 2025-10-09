@@ -17,30 +17,24 @@ namespace SergiyE.StatusPageIoApi {
   public partial class StatusPageIoApi {
     
     private readonly HttpClient httpClient;
-    private readonly Lazy<JsonSerializerSettings> settings;
+    private readonly JsonSerializerSettings jsonSettings;
 
     public StatusPageIoApi(string apiKey) {
       httpClient = new HttpClient();
       httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("OAuth", apiKey);
       httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-      settings = new Lazy<JsonSerializerSettings>(CreateSerializerSettings);
-    }
-
-    private string BaseUrl { get; set; } = "https://api.statuspage.io/v1";
-
-    private JsonSerializerSettings JsonSerializerSettings => settings.Value;
-
-    private static JsonSerializerSettings CreateSerializerSettings() {
-      var jsonSettings = new JsonSerializerSettings {
+      //httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+      jsonSettings = new JsonSerializerSettings {
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new CamelCasePropertyNamesContractResolver {
           NamingStrategy = new SnakeCaseNamingStrategy()
         }
       };
       jsonSettings.Converters.Add(new StringEnumConverter());
-      return jsonSettings;
     }
-    
+
+    private string BaseUrl { get; set; } = "https://api.statuspage.io/v1";
+
     /// <summary>
     /// Get status embed config settings
     /// </summary>
@@ -165,7 +159,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -298,7 +292,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -414,7 +408,7 @@ namespace SergiyE.StatusPageIoApi {
 
       var responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
       try {
-        var typedBody = JsonConvert.DeserializeObject<T>(responseText, JsonSerializerSettings);
+        var typedBody = JsonConvert.DeserializeObject<T>(responseText, jsonSettings);
         return new ObjectResponseResult<T>(typedBody, responseText);
       }
       catch (JsonException exception) {

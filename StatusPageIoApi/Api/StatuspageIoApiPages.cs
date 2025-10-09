@@ -101,7 +101,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -230,7 +230,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");

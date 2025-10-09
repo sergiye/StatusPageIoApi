@@ -36,7 +36,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -198,7 +198,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -312,10 +312,9 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
         request.Content = content;
         request.Method = new HttpMethod("PUT");
 
@@ -796,11 +795,11 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var dictionary =
           JsonConvert
             .DeserializeObject<Dictionary<string, string>>(json,
-              settings.Value);
+              jsonSettings);
         var content = new FormUrlEncodedContent(dictionary);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
@@ -1072,7 +1071,7 @@ namespace SergiyE.StatusPageIoApi {
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -1309,7 +1308,7 @@ namespace SergiyE.StatusPageIoApi {
         Uri.EscapeDataString(ConvertToString(id, CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");
@@ -1423,7 +1422,7 @@ namespace SergiyE.StatusPageIoApi {
         Uri.EscapeDataString(ConvertToString(id, CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, settings.Value);
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
         var content = new StringContent(json);
         content.Headers.ContentType =
           MediaTypeHeaderValue.Parse("application/json");

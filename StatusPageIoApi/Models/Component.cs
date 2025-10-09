@@ -26,16 +26,16 @@ namespace SergiyE.StatusPageIoApi {
     public string GroupId { get; set; }
 
     [JsonProperty("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// Is this component a group
     /// </summary>
     [JsonProperty("group")]
-    public bool Group { get; set; }
+    public bool? Group { get; set; }
 
     /// <summary>
     /// Display name for component
@@ -53,25 +53,25 @@ namespace SergiyE.StatusPageIoApi {
     /// Order the component will appear on the page
     /// </summary>
     [JsonProperty("position")]
-    public int Position { get; set; }
+    public int? Position { get; set; }
 
     /// <summary>
     /// Status of component
     /// </summary>
     [JsonProperty("status")]
-    public ComponentStatus Status { get; set; }
+    public ComponentStatus? Status { get; set; }
 
     /// <summary>
     /// Should this component be showcased
     /// </summary>
     [JsonProperty("showcase")]
-    public bool Showcase { get; set; }
+    public bool? Showcase { get; set; }
 
     /// <summary>
     /// Requires a special feature flag to be enabled
     /// </summary>
     [JsonProperty("only_show_if_degraded")]
-    public bool OnlyShowIfDegraded { get; set; }
+    public bool? OnlyShowIfDegraded { get; set; }
 
     /// <summary>
     /// Requires a special feature flag to be enabled
@@ -83,6 +83,6 @@ namespace SergiyE.StatusPageIoApi {
     /// The date this component started being used
     /// </summary>
     [JsonProperty("start_date")]
-    public DateTimeOffset StartDate { get; set; }
+    public DateTimeOffset? StartDate { get; set; }
   }
 }
