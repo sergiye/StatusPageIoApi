@@ -13,6 +13,6 @@ namespace SergiyE.StatusPageIoApi {
     public string Description { get; set; }
 
     [JsonProperty("component_group")]
-    public ComponentGroup ComponentGroup { get; set; }
+    public EditComponentGroup EditComponentGroup { get; set; }
   }
 }

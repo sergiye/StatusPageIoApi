@@ -1056,7 +1056,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PostComponentGroups(string pageId, PostComponentGroup body,
+    public virtual async Task<ComponentGroup> PostComponentGroup(string pageId, PostComponentGroup body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1095,7 +1095,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 201) {
             var objectResponse =
-              await ReadObjectResponseAsync<GroupComponent>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<ComponentGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1176,7 +1176,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get a list of component groups</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent[]> GetComponentGroups(string pageId, int? page = null, int? perPage = null,
+    public virtual async Task<ComponentGroup[]> GetComponentGroups(string pageId, int? page = null, int? perPage = null,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1224,7 +1224,7 @@ namespace SergiyE.StatusPageIoApi {
             var status = (int) response.StatusCode;
             if (status == 200) {
               var objectResponse =
-                await ReadObjectResponseAsync<GroupComponent[]>(
+                await ReadObjectResponseAsync<ComponentGroup[]>(
                   response, headers, cancellationToken).ConfigureAwait(false);
               if (objectResponse.Object == null) {
                 throw new ApiException("Response was null which was not expected.", status,
@@ -1287,7 +1287,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PatchComponentGroup(string pageId, string id,
+    public virtual async Task<ComponentGroup> PatchComponentGroup(string pageId, string id,
       PatchComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1332,7 +1332,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<GroupComponent>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<ComponentGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1401,7 +1401,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> PutComponentGroup(string pageId, string id,
+    public virtual async Task<ComponentGroup> PutComponentGroup(string pageId, string id,
       PutComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1446,7 +1446,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<GroupComponent>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<ComponentGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1514,7 +1514,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Delete a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> DeleteComponentGroup(string pageId, string id,
+    public virtual async Task<ComponentGroup> DeleteComponentGroup(string pageId, string id,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1551,7 +1551,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<GroupComponent>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<ComponentGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1607,7 +1607,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<GroupComponent> GetComponentGroup(string pageId, string id,
+    public virtual async Task<ComponentGroup> GetComponentGroup(string pageId, string id,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1644,7 +1644,7 @@ namespace SergiyE.StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<GroupComponent>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<ComponentGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
