@@ -1,13 +1,11 @@
 ﻿using Newtonsoft.Json;
 
 namespace SergiyE.StatusPageIoApi {
-  /// <summary>
-  /// Delete metrics for page access user
-  /// </summary>
-  public class DeletePageAccessUserMetrics {
+
+  public class EditMetricIds {
 
     /// <summary>
-    /// List of metrics to remove
+    /// List of metrics to add
     /// </summary>
     [JsonProperty("metric_ids")]
     public string[] MetricIds { get; set; }

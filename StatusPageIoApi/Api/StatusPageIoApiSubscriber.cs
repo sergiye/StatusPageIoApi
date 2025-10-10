@@ -1201,12 +1201,12 @@ namespace SergiyE.StatusPageIoApi {
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
     /// <param name="subscriberId">Subscriber Identifier</param>
-    /// <param name="body"></param>
+    /// <param name="body">A list of component ids for which the subscriber should recieve updates for. Components must be an array with at least one element if it is passed at all. Each component must belong to the page indicated in the path. To set the subscriber to be subscribed to all components on the page, exclude this parameter.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a subscriber</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Subscriber> PatchSubscriber(string pageId, string subscriberId,
-      PatchSubscriber body,
+      EditComponentIds body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
