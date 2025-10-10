@@ -21,7 +21,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PostComponents(string pageId, PostComponent body,
+    public virtual async Task<Component> PostComponent(string pageId, PostComponent body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -290,7 +290,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutComponents body,
+    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutComponent body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));

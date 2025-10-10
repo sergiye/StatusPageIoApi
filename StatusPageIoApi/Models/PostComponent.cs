@@ -7,6 +7,6 @@ namespace SergiyE.StatusPageIoApi {
   public class PostComponent {
 
     [JsonProperty("component")]
-    public Component Component { get; set; }
+    public EditComponent Component { get; set; }
   }
 }

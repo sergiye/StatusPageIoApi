@@ -4,9 +4,9 @@ namespace SergiyE.StatusPageIoApi {
   /// <summary>
   /// Update a component
   /// </summary>
-  public class PutComponents {
+  public class PutComponent {
 
     [JsonProperty("component")]
-    public Component Component { get; set; }
+    public EditComponent Component { get; set; }
   }
 }

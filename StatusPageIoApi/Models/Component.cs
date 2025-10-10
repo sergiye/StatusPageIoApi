@@ -83,4 +83,49 @@ namespace SergiyE.StatusPageIoApi {
     [JsonProperty("start_date")]
     public DateTimeOffset? StartDate { get; set; }
   }
+
+  public class EditComponent {
+
+    /// <summary>
+    /// More detailed description for component
+    /// </summary>
+    [JsonProperty("description")]
+    public string Description { get; set; }
+
+    /// <summary>
+    /// Status of component
+    /// </summary>
+    [JsonProperty("status")]
+    public ComponentStatus? Status { get; set; }
+
+    /// <summary>
+    /// Display name for component
+    /// </summary>
+    [JsonProperty("name")]
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Requires a special feature flag to be enabled
+    /// </summary>
+    [JsonProperty("only_show_if_degraded")]
+    public bool? OnlyShowIfDegraded { get; set; }
+
+    /// <summary>
+    /// Component Group identifier
+    /// </summary>
+    [JsonProperty("group_id")]
+    public string GroupId { get; set; }
+
+    /// <summary>
+    /// Should this component be showcased
+    /// </summary>
+    [JsonProperty("showcase")]
+    public bool? Showcase { get; set; }
+
+    /// <summary>
+    /// The date this component started being used
+    /// </summary>
+    [JsonProperty("start_date")]
+    public DateTimeOffset? StartDate { get; set; }
+  }
 }
