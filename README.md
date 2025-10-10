@@ -3,7 +3,7 @@
 [![Nuget](https://img.shields.io/nuget/v/SergiyE.StatusPageIoApi?style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
 [![Nuget](https://img.shields.io/nuget/dt/SergiyE.StatusPageIoApi?label=nuget-downloads&style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
 
-*StatusPageIoApi is an implementation of (StatusPage.io)[https://statuspage.io]'s (API)[https://developer.statuspage.io/] client in C# / .NET*
+*StatusPageIoApi is an implementation of [StatusPage.io](https://statuspage.io)'s [API](https://developer.statuspage.io) client in C# / .NET*
 
 ## Developer information
 **Integrate the library in own application**
