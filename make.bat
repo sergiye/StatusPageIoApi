@@ -5,11 +5,11 @@ SET msbuild="%%F"
 )
 ECHO %msbuild%
 
-@%msbuild% sergiye.StatusPageIoApi.sln /t:restore /p:RestorePackagesConfig=true
-@%msbuild% sergiye.StatusPageIoApi.sln /t:Rebuild /p:DebugType=None /p:Configuration=Release
+@%msbuild% StatusPageIoApi.sln /t:restore /p:RestorePackagesConfig=true
+@%msbuild% StatusPageIoApi.sln /t:Rebuild /p:DebugType=None /p:Configuration=Release
 
-rem dotnet build sergiye.StatusPageIoApi.sln -c Release -p:DebugType=None -p:Platform="Any CPU"
-rem dotnet pack sergiye.StatusPageIoApi.sln -c Release -p:DebugType=None -p:Platform="Any CPU"
+rem dotnet build StatusPageIoApi.sln -c Release -p:DebugType=None -p:Platform="Any CPU"
+rem dotnet pack StatusPageIoApi.sln -c Release -p:DebugType=None -p:Platform="Any CPU"
 
 if errorlevel 1 goto error
 

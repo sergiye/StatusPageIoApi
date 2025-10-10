@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
 
   public partial class StatusPageIoApi {
     

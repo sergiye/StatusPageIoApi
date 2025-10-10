@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   /// <summary>
   /// Resend confirmations to a list of subscribers
   /// </summary>

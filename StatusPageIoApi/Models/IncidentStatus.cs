@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   
   /// <summary>
   /// The incident status. 

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
 
   public partial class StatusPageIoApi {
     

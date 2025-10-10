@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   /// <summary>
   /// Unsubscribe a list of subscribers
   /// </summary>

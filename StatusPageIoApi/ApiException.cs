@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   
   public class ApiException : Exception {
 

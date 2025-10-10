@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   /// <summary>
   /// Reactivate a list of quarantined subscribers
   /// </summary>

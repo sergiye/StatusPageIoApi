@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   public enum IncidentImpactOverride {
     [EnumMember(Value = "none")]
     None = 0,

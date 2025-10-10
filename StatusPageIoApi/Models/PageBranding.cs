@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   public enum PageBranding {
     [EnumMember(Value = "basic")]
     Basic = 0,

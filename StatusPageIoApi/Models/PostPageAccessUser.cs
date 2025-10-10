@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   /// <summary>
   /// Add a page access user
   /// </summary>

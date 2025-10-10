@@ -1,13 +1,13 @@
-# sergiye.StatusPageIoApi
+# StatusPageIoApi
 
 [![Nuget](https://img.shields.io/nuget/v/SergiyE.StatusPageIoApi?style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
 [![Nuget](https://img.shields.io/nuget/dt/SergiyE.StatusPageIoApi?label=nuget-downloads&style=for-the-badge)](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/)
 
-*SergiyE.StatusPageIoApi is an implementation of StatusPage.io's API in C# / .NET*
+*StatusPageIoApi is an implementation of (StatusPage.io)[https://statuspage.io]'s (API)[https://developer.statuspage.io/] client in C# / .NET*
 
 ## Developer information
 **Integrate the library in own application**
-1. Add the [SergiyE.StatusPageIoApi](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/) NuGet package to your application.
+1. Add the [StatusPageIoApi](https://www.nuget.org/packages/SergiyE.StatusPageIoApi/) NuGet package to your application.
 2. Use the sample code below or the test console application from [here](https://github.com/SergiyE/StatusPageIoApi/tree/master/LibTest)
 
 

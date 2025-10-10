@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>SergiyE.StatusPageIoApi</RootNamespace>
+    <RootNamespace>StatusPageIoApi</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -12,8 +12,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>SergiyE.StatusPageIoApi</AssemblyName>
-    <AssemblyVersion>1.0.7</AssemblyVersion>
-    <AssemblyTitle>SergiyE.StatusPageIoApi</AssemblyTitle>
+    <AssemblyVersion>1.0.8</AssemblyVersion>
+    <AssemblyTitle>StatusPageIoApi</AssemblyTitle>
     <AssemblyProduct>StatusPageIoApi</AssemblyProduct>
     <AssemblyCompany>SergiyE</AssemblyCompany>
     <AssemblyCopyright>Copyright © 2025 Sergiy Egoshyn</AssemblyCopyright>

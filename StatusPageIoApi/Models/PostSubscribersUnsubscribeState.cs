@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SergiyE.StatusPageIoApi {
+namespace StatusPageIoApi {
   public enum PostSubscribersUnsubscribeState {
     [EnumMember(Value = @"active")]
     Active = 0,
