@@ -41,4 +41,49 @@ namespace SergiyE.StatusPageIoApi {
     [JsonProperty("name", Required = Required.Always)]
     public string Name { get; set; }
   }
+  
+  /// <summary>
+  /// Create a component group
+  /// </summary>
+  public class PostComponentGroup {
+
+    /// <summary>
+    /// Description of the component group.
+    /// </summary>
+    [JsonProperty("description")]
+    public string Description { get; set; }
+
+    [JsonProperty("component_group")]
+    public EditComponentGroup ComponentGroup { get; set; }
+  }
+  
+  /// <summary>
+  /// Partially update a component group
+  /// </summary>
+  public class PatchComponentGroup {
+
+    /// <summary>
+    /// Updated description of the component group.
+    /// </summary>
+    [JsonProperty("description")]
+    public string Description { get; set; }
+
+    [JsonProperty("component_group")]
+    public EditComponentGroup ComponentGroup { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a component group
+  /// </summary>
+  public class PutComponentGroup {
+
+    /// <summary>
+    /// Updated description of the component group.
+    /// </summary>
+    [JsonProperty("description")]
+    public string Description { get; set; }
+
+    [JsonProperty("component_group")]
+    public EditComponentGroup ComponentGroup { get; set; }
+  }
 }

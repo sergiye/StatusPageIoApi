@@ -128,4 +128,31 @@ namespace SergiyE.StatusPageIoApi {
     [JsonProperty("start_date")]
     public DateTimeOffset? StartDate { get; set; }
   }
+  
+  /// <summary>
+  /// Create a component
+  /// </summary>
+  public class PostComponent {
+
+    [JsonProperty("component")]
+    public EditComponent Component { get; set; }
+  }
+  
+  /// <summary>
+  /// Partially update a component
+  /// </summary>
+  public class PatchComponent {
+
+    [JsonProperty("component")]
+    public EditComponent Component { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a component
+  /// </summary>
+  public class PutComponent {
+
+    [JsonProperty("component")]
+    public EditComponent Component { get; set; }
+  }
 }

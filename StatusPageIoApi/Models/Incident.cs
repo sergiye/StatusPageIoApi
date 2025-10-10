@@ -204,7 +204,7 @@ namespace SergiyE.StatusPageIoApi {
     public string ReminderIntervals { get; set; }
   }
 
-  public class CreateIncident {
+  public class EditIncident {
 
     /// <summary>
     /// Incident Name. There is a maximum limit of 255 characters.
@@ -351,5 +351,32 @@ namespace SergiyE.StatusPageIoApi {
     /// </summary>
     [JsonProperty("scheduled_auto_transition")]
     public bool? ScheduledAutoTransition { get; set; }
+  }
+  
+  /// <summary>
+  /// Create an incident
+  /// </summary>
+  public class PostIncident {
+
+    [JsonProperty("incident")]
+    public EditIncident Incident { get; set; }
+  }
+  
+  /// <summary>
+  /// Update an incident
+  /// </summary>
+  public class PatchIncident {
+
+    [JsonProperty("incident")]
+    public EditIncident Incident { get; set; }
+  }
+  
+  /// <summary>
+  /// Update an incident
+  /// </summary>
+  public class PutIncident {
+
+    [JsonProperty("incident")]
+    public EditIncident Incident { get; set; }
   }
 }

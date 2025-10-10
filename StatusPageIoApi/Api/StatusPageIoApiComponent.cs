@@ -100,7 +100,7 @@ namespace SergiyE.StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get a list of components</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component[]> GetPagesComponents(string pageId, int? page = null, int? perPage = null,
+    public virtual async Task<Component[]> GetComponents(string pageId, int? page = null, int? perPage = null,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -772,11 +772,11 @@ namespace SergiyE.StatusPageIoApi {
     /// </summary>
     /// <param name="pageId">Page identifier</param>
     /// <param name="componentId">Component identifier</param>
-    /// <param name="body"></param>
+    /// <param name="body">List of page access users to add to component</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Add page access users to a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PostComponentPageAccessUsers(string pageId, string componentId, Body body,
+    public virtual async Task<Component> PostComponentPageAccessUsers(string pageId, string componentId, PostComponentPageAccessUsers body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
