@@ -85,4 +85,49 @@ namespace StatusPageIoApi {
     [JsonProperty("wants_twitter_update")]
     public bool? WantsTwitterUpdate { get; set; }
   }
+  
+  public class EditIncidentUpdate {
+
+    /// <summary>
+    /// Controls whether to create twitter update.
+    /// </summary>
+    [JsonProperty("wants_twitter_update")]
+    public bool? WantsTwitterUpdate { get; set; }
+
+    /// <summary>
+    /// Incident update body.
+    /// </summary>
+    [JsonProperty("body")]
+    public string Body { get; set; }
+
+    /// <summary>
+    /// Timestamp when incident update is happened.
+    /// </summary>
+    [JsonProperty("display_at")]
+    public DateTimeOffset? DisplayAt { get; set; }
+
+    /// <summary>
+    /// Controls whether to delivery notifications.
+    /// </summary>
+    [JsonProperty("deliver_notifications")]
+    public bool? DeliverNotifications { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a previous incident update
+  /// </summary>
+  public class PatchIncidentUpdate {
+
+    [JsonProperty("incident_update")]
+    public EditIncidentUpdate IncidentUpdate { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a previous incident update
+  /// </summary>
+  public class PutIncidentUpdates {
+
+    [JsonProperty("incident_update")]
+    public EditIncidentUpdate IncidentUpdate { get; set; }
+  }
 }
