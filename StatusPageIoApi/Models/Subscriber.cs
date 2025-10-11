@@ -81,7 +81,7 @@ namespace StatusPageIoApi {
     /// The components for which the subscriber has elected to receive updates.
     /// </summary>
     [JsonProperty("components")]
-    public string Components { get; set; }
+    public string[] Components { get; set; }
 
     /// <summary>
     /// The Page Access user this subscriber belongs to (only for audience-specific pages).
@@ -91,6 +91,39 @@ namespace StatusPageIoApi {
 
     [JsonProperty("created_at")]
     public DateTimeOffset? CreatedAt { get; set; }
+  }
+  
+  public class CreateSubscriber {
+
+    /// <summary>
+    /// The email address to use to contact the subscriber. Used for Email and Webhook subscribers.
+    /// </summary>
+    [JsonProperty("email")]
+    public string Email { get; set; }
+
+    /// <summary>
+    /// The URL where a webhook subscriber elects to receive updates.
+    /// </summary>
+    [JsonProperty("endpoint")]
+    public string Endpoint { get; set; }
+
+    /// <summary>
+    /// The two-character country code representing the country of which the phone_number is a part.
+    /// </summary>
+    [JsonProperty("phone_country")]
+    public string PhoneCountry { get; set; }
+
+    /// <summary>
+    /// The phone number used to contact an SMS subscriber
+    /// </summary>
+    [JsonProperty("phone_number")]
+    public string PhoneNumber { get; set; }
+
+    /// <summary>
+    /// If this is true, do not notify the user with changes to their subscription.
+    /// </summary>
+    [JsonProperty("skip_confirmation_notification")]
+    public bool? SkipConfirmationNotification { get; set; }
 
     /// <summary>
     /// The code of the page access user to which the subscriber belongs.
@@ -103,5 +136,14 @@ namespace StatusPageIoApi {
     /// </summary>
     [JsonProperty("component_ids")]
     public string[] ComponentIds { get; set; }
+  }
+  
+  /// <summary>
+  /// Create a subscriber. Not applicable for Slack subscribers.
+  /// </summary>
+  public class PostSubscriber {
+
+    [JsonProperty("subscriber")]
+    public CreateSubscriber Subscriber { get; set; }
   }
 }

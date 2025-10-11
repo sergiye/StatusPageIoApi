@@ -38,4 +38,22 @@ namespace StatusPageIoApi {
     [JsonProperty("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
   }
+  
+  /// <summary>
+  /// Add a page access user
+  /// </summary>
+  public class PostPageAccessUser {
+
+    [JsonProperty("page_access_user")]
+    public PageAccessUser PageAccessUser { get; set; }
+  }
+
+  public class PostComponentPageAccessUsers {
+
+    /// <summary>
+    /// List of page access users to add to component
+    /// </summary>
+    [JsonProperty("page_access_user_ids", Required = Required.Always)]
+    public string[] PageAccessUserIds { get; set; }
+  }
 }

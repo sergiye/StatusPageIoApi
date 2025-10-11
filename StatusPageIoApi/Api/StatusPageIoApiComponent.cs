@@ -21,7 +21,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PostComponent(string pageId, PostComponent body,
+    public virtual async Task<Component> PostComponent(string pageId, EditComponentBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -176,7 +176,7 @@ namespace StatusPageIoApi {
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<Component> PatchComponent(string pageId, string componentId,
-      PatchComponent body,
+      EditComponentBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -290,7 +290,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a component</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component> PutComponent(string pageId, string componentId, PutComponent body,
+    public virtual async Task<Component> PutComponent(string pageId, string componentId, EditComponentBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1056,7 +1056,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<ComponentGroup> PostComponentGroup(string pageId, PostComponentGroup body,
+    public virtual async Task<ComponentGroup> PostComponentGroup(string pageId, EditComponentGroupBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1288,7 +1288,7 @@ namespace StatusPageIoApi {
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<ComponentGroup> PatchComponentGroup(string pageId, string id,
-      PatchComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
+      EditComponentGroupBody body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1402,7 +1402,7 @@ namespace StatusPageIoApi {
     /// <returns>Update a component group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<ComponentGroup> PutComponentGroup(string pageId, string id,
-      PutComponentGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
+      EditComponentGroupBody body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 

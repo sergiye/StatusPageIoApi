@@ -44,4 +44,31 @@ namespace StatusPageIoApi {
     [JsonProperty("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
   }
+  
+  /// <summary>
+  /// Create a page access group
+  /// </summary>
+  public class PostPageAccessGroup {
+
+    [JsonProperty("page_access_group")]
+    public PageAccessGroup PageAccessGroup { get; set; }
+  }
+
+  /// <summary>
+  /// Update a page access group
+  /// </summary>
+  public class PatchPageAccessGroup {
+
+    [JsonProperty("page_access_group")]
+    public PageAccessGroup PageAccessGroup { get; set; }
+  }
+
+  /// <summary>
+  /// Update a page access group
+  /// </summary>
+  public class PutPageAccessGroup {
+
+    [JsonProperty("page_access_group")]
+    public PageAccessGroup PageAccessGroup { get; set; }
+  }
 }

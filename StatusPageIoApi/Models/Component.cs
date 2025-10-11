@@ -129,30 +129,18 @@ namespace StatusPageIoApi {
     public DateTimeOffset? StartDate { get; set; }
   }
   
-  /// <summary>
-  /// Create a component
-  /// </summary>
-  public class PostComponent {
+  public class EditComponentBody {
 
     [JsonProperty("component")]
     public EditComponent Component { get; set; }
   }
-  
-  /// <summary>
-  /// Partially update a component
-  /// </summary>
-  public class PatchComponent {
+    
+  public class EditComponentIds {
 
-    [JsonProperty("component")]
-    public EditComponent Component { get; set; }
-  }
-  
-  /// <summary>
-  /// Update a component
-  /// </summary>
-  public class PutComponent {
-
-    [JsonProperty("component")]
-    public EditComponent Component { get; set; }
+    /// <summary>
+    /// List of components codes
+    /// </summary>
+    [JsonProperty("component_ids")]
+    public string[] ComponentIds { get; set; }
   }
 }
