@@ -40,4 +40,55 @@ namespace StatusPageIoApi {
     [JsonProperty("maintenance_text_color")]
     public string MaintenanceTextColor { get; set; }
   }
+  
+  public class EditStatusEmbedConfig {
+
+    /// <summary>
+    /// Corner where status embed iframe will appear on page
+    /// </summary>
+    [JsonProperty("position")]
+    public string Position { get; set; }
+
+    /// <summary>
+    /// Color of status embed iframe background when displaying incident
+    /// </summary>
+    [JsonProperty("incident_background_color")]
+    public string IncidentBackgroundColor { get; set; }
+
+    /// <summary>
+    /// Color of status embed iframe text when displaying incident
+    /// </summary>
+    [JsonProperty("incident_text_color")]
+    public string IncidentTextColor { get; set; }
+
+    /// <summary>
+    /// Color of status embed iframe background when displaying maintenance
+    /// </summary>
+    [JsonProperty("maintenance_background_color")]
+    public string MaintenanceBackgroundColor { get; set; }
+
+    /// <summary>
+    /// Color of status embed iframe text when displaying maintenance
+    /// </summary>
+    [JsonProperty("maintenance_text_color")]
+    public string MaintenanceTextColor { get; set; }
+  }
+  
+  /// <summary>
+  /// Update status embed config settings
+  /// </summary>
+  public class PatchStatusEmbedConfig {
+
+    [JsonProperty("status_embed_config")]
+    public EditStatusEmbedConfig StatusEmbedConfig { get; set; }
+  }
+
+  /// <summary>
+  /// Update status embed config settings
+  /// </summary>
+  public class PutStatusEmbedConfig {
+
+    [JsonProperty("status_embed_config")]
+    public EditStatusEmbedConfig StatusEmbedConfig { get; set; }
+  }
 }
