@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace StatusPageIoApi {
 
   public partial class StatusPageIoApi {
-    
+
     /// <summary>
     /// Add data points to metrics
     /// </summary>
@@ -20,8 +20,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Data Point is submitted and is currently being added to the metrics</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<MetricAddResponse> PostMetricsData(
-      string pageId, PostMetricsData body,
+    public virtual async Task<MetricAddResponse> PostMetricsData(string pageId, PostMetricsData body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -141,8 +140,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get a list of metrics</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> GetMetrics(string pageId, int? page = null,
-      int? perPage = null, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> GetMetrics(string pageId, int? page = null, int? perPage = null,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -251,8 +250,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> PatchMetric(string pageId,
-      string metricId, EditMetricBody body, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> PatchMetric(string pageId, string metricId, EditMetricBody body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -366,8 +365,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> PutMetric(string pageId,
-      string metricId, EditMetricBody body, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> PutMetric(string pageId, string metricId, EditMetricBody body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -480,8 +479,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Delete a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> DeleteMetric(string pageId,
-      string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> DeleteMetric(string pageId, string metricId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -574,8 +573,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Get a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> GetMetric(string pageId,
-      string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> GetMetric(string pageId, string metricId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -668,8 +667,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Reset data for a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> DeletePagesPageIdMetricsMetricIdDataAsync(
-      string pageId, string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<Metric> DeleteMetricData(string pageId, string metricId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -763,8 +762,8 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Add data to a metric</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PostMetricData> PostMetricData(string pageId, string metricId,
-      PostMetricData body, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<PostMetricData> PostMetricData(string pageId, string metricId, PostMetricData body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
@@ -1696,7 +1695,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Create a metric for a metric provider</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric> PostMetricsProviderMetrics(string pageId, string metricsProviderId,
+    public virtual async Task<Metric> PostMetricsProviderMetric(string pageId, string metricsProviderId,
       CreateMetricsProviderMetricBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
