@@ -21,4 +21,13 @@ namespace StatusPageIoApi {
     [JsonProperty("custom_tweet")]
     public string CustomTweet { get; set; }
   }
+  
+  /// <summary>
+  /// Publish Postmortem
+  /// </summary>
+  public class PutIncidentPostmortemPublish {
+
+    [JsonProperty("postmortem")]
+    public PostmortemPublish Postmortem { get; set; }
+  }
 }

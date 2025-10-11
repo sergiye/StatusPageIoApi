@@ -6,8 +6,16 @@ namespace StatusPageIoApi {
     /// <summary>
     /// Body of Postmortem to create.
     /// </summary>
-    [JsonProperty("body_draft", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+    [JsonProperty("body_draft")]
     public string BodyDraft { get; set; }
+  }
+  
+  /// <summary>
+  /// Create Postmortem
+  /// </summary>
+  public class PutIncidentPostmortem {
+
+    [JsonProperty("postmortem")]
+    public Postmortem2 Postmortem { get; set; }
   }
 }

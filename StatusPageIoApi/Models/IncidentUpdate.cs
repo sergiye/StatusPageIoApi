@@ -113,19 +113,7 @@ namespace StatusPageIoApi {
     public bool? DeliverNotifications { get; set; }
   }
   
-  /// <summary>
-  /// Update a previous incident update
-  /// </summary>
-  public class PatchIncidentUpdate {
-
-    [JsonProperty("incident_update")]
-    public EditIncidentUpdate IncidentUpdate { get; set; }
-  }
-  
-  /// <summary>
-  /// Update a previous incident update
-  /// </summary>
-  public class PutIncidentUpdates {
+  public class EditIncidentUpdateBody {
 
     [JsonProperty("incident_update")]
     public EditIncidentUpdate IncidentUpdate { get; set; }

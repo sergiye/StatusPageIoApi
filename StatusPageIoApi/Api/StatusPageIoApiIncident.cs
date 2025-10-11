@@ -1201,7 +1201,7 @@ namespace StatusPageIoApi {
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PatchIncidentUpdate(string pageId, string incidentId,
-      string incidentUpdateId, PatchIncidentUpdate body,
+      string incidentUpdateId, EditIncidentUpdateBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -1284,7 +1284,7 @@ namespace StatusPageIoApi {
     /// <returns>Update a previous incident update</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
     public virtual async Task<IncidentUpdate> PutIncidentUpdate(string pageId, string incidentId,
-      string incidentUpdateId, PutIncidentUpdates body,
+      string incidentUpdateId, EditIncidentUpdateBody body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
