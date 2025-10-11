@@ -90,7 +90,7 @@ namespace StatusPageIoApi {
     /// </summary>
     [JsonProperty("allow_sms_subscribers")]
     public bool? AllowSmsSubscribers { get; set; }
-
+    
     /// <summary>
     /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
     /// </summary>
@@ -228,5 +228,191 @@ namespace StatusPageIoApi {
 
     [JsonProperty("twitter_logo")]
     public PageLogoItem TwitterLogo { get; set; }
+  }
+  
+  public class EditPage {
+
+    /// <summary>
+    /// Name of your page to be displayed
+    /// </summary>
+    [JsonProperty("name")]
+    public string Name { get; set; }
+
+    /// <summary>
+    /// CNAME alias for your status page
+    /// </summary>
+    [JsonProperty("domain")]
+    public string Domain { get; set; }
+
+    /// <summary>
+    /// Subdomain at which to access your status page
+    /// </summary>
+    [JsonProperty("subdomain")]
+    public string Subdomain { get; set; }
+
+    /// <summary>
+    /// Website of your page.  Clicking on your statuspage image will link here.
+    /// </summary>
+    [JsonProperty("url")]
+    public string Url { get; set; }
+
+    /// <summary>
+    /// The main template your statuspage will use
+    /// </summary>
+    [JsonProperty("branding")]
+    public PageBranding? Branding { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_body_background_color")]
+    public string CssBodyBackgroundColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_font_color")]
+    public string CssFontColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_light_font_color")]
+    public string CssLightFontColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_greens")]
+    public string CssGreens { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_yellows")]
+    public string CssYellows { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_oranges")]
+    public string CssOranges { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_blues")]
+    public string CssBlues { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_reds")]
+    public string CssReds { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_border_color")]
+    public string CssBorderColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_graph_color")]
+    public string CssGraphColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_link_color")]
+    public string CssLinkColor { get; set; }
+
+    /// <summary>
+    /// CSS Color
+    /// </summary>
+    [JsonProperty("css_no_data")]
+    public string CssNoData { get; set; }
+
+    /// <summary>
+    /// Should your page hide itself from search engines
+    /// </summary>
+    [JsonProperty("hidden_from_search")]
+    public bool? HiddenFromSearch { get; set; }
+
+    [JsonProperty("viewers_must_be_team_members")]
+    public bool? ViewersMustBeTeamMembers { get; set; }
+
+    /// <summary>
+    /// Can your users subscribe to all notifications on the page
+    /// </summary>
+    [JsonProperty("allow_page_subscribers")]
+    public bool? AllowPageSubscribers { get; set; }
+
+    /// <summary>
+    /// Can your users subscribe to notifications for a single incident
+    /// </summary>
+    [JsonProperty("allow_incident_subscribers")]
+    public bool? AllowIncidentSubscribers { get; set; }
+
+    /// <summary>
+    /// Can your users choose to receive notifications via email
+    /// </summary>
+    [JsonProperty("allow_email_subscribers")]
+    public bool? AllowEmailSubscribers { get; set; }
+
+    /// <summary>
+    /// Can your users choose to receive notifications via SMS
+    /// </summary>
+    [JsonProperty("allow_sms_subscribers")]
+    public bool? AllowSmsSubscribers { get; set; }
+
+    /// <summary>
+    /// Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)
+    /// </summary>
+    [JsonProperty("allow_rss_atom_feeds")]
+    public bool? AllowRssAtomFeeds { get; set; }
+
+    /// <summary>
+    /// Can your users choose to receive notifications via Webhooks
+    /// </summary>
+    [JsonProperty("allow_webhook_subscribers")]
+    public bool? AllowWebhookSubscribers { get; set; }
+
+    /// <summary>
+    /// Allows you to customize the email address your page notifications come from
+    /// </summary>
+    [JsonProperty("notifications_from_email")]
+    public string NotificationsFromEmail { get; set; }
+
+    /// <summary>
+    /// Allows you to customize the footer appearing on your notification emails.  Accepts Markdown for formatting
+    /// </summary>
+    [JsonProperty("notifications_email_footer")]
+    public string NotificationsEmailFooter { get; set; }
+
+    /// <summary>
+    /// Timezone configured for your page
+    /// </summary>
+    [JsonProperty("time_zone")]
+    public string TimeZone { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a page
+  /// </summary>
+  public class PatchPage {
+
+    [JsonProperty("page")]
+    public EditPage Page { get; set; }
+  }
+  
+  /// <summary>
+  /// Update a page
+  /// </summary>
+  public class PutPage {
+
+    [JsonProperty("page")]
+    public EditPage Page { get; set; }
   }
 }

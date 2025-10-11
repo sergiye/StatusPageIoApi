@@ -1184,7 +1184,7 @@ namespace StatusPageIoApi {
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
     /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
+    /// <param name="body">List of components codes to remove.  If omitted, all components will be removed.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Remove components for page access user</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>

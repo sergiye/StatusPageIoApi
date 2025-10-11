@@ -1082,7 +1082,7 @@ namespace StatusPageIoApi {
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
     /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
-    /// <param name="body"></param>
+    /// <param name="body">List of components codes to remove.  If omitted, all components will be removed.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Delete components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>

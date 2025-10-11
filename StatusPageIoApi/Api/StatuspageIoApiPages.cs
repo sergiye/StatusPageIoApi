@@ -86,7 +86,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a page</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Page> PatchPages(string pageId, PatchPages body,
+    public virtual async Task<Page> PatchPage(string pageId, PatchPage body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -215,7 +215,7 @@ namespace StatusPageIoApi {
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns>Update a page</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Page> PutPages(string pageId, PutPages body,
+    public virtual async Task<Page> PutPage(string pageId, PutPage body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
