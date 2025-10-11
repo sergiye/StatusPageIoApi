@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 
 namespace StatusPageIoApi {
-
+  
   public class MetricsProvider {
 
     /// <summary>
@@ -34,7 +34,10 @@ namespace StatusPageIoApi {
 
     [JsonProperty("page_id")]
     public int? PageId { get; set; }
-
+  }
+ 
+  public class CreateMetricsProvider {
+    
     /// <summary>
     /// Required by the Librato metrics provider.
     /// </summary>
@@ -61,5 +64,38 @@ namespace StatusPageIoApi {
     /// </summary>
     [JsonProperty("application_key")]
     public string ApplicationKey { get; set; }
+
+    /// <summary>
+    /// One of "Pingdom", "NewRelic", "Librato", "Datadog", or "Self"
+    /// </summary>
+    [JsonProperty("type")]
+    public string Type { get; set; }
+    
+    [JsonProperty("metric_base_uri")]
+    public string MetricBaseUri { get; set; }
+  }
+ 
+  public class CreateMetricsProviderBody {
+
+    [JsonProperty("metrics_provider")]
+    public CreateMetricsProvider MetricsProvider { get; set; }
+  }
+ 
+  public class EditMetricsProvider {
+    
+    /// <summary>
+    /// One of "Pingdom", "NewRelic", "Librato", "Datadog", or "Self"
+    /// </summary>
+    [JsonProperty("type")]
+    public string Type { get; set; }
+    
+    [JsonProperty("metric_base_uri")]
+    public string MetricBaseUri { get; set; }
+  }
+ 
+  public class EditMetricsProviderBody {
+
+    [JsonProperty("metrics_provider")]
+    public EditMetricsProvider MetricsProvider { get; set; }
   }
 }
