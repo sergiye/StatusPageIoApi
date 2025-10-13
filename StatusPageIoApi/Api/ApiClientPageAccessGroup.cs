@@ -10,20 +10,139 @@ using System.Threading.Tasks;
 
 namespace StatusPageIoApi {
 
-  public partial class StatusPageIoApi {
+  public partial class ApiClient {
 
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Add a page access user
+    /// Get a list of page access groups
     /// </summary>
     /// <remarks>
-    /// Add a page access user
+    /// Get a list of page access groups
+    /// </remarks>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
+    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
+    /// <returns>Get a list of page access groups</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup[]> GetPageAccessGroups(string pageId, int? page = null,
+      int? perPage = null, CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups?");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      if (page != null) {
+        urlBuilder.Append(Uri.EscapeDataString("page") + "=")
+          .Append(Uri.EscapeDataString(ConvertToString(page,
+            CultureInfo.InvariantCulture))).Append("&");
+      }
+
+      if (perPage != null) {
+        urlBuilder.Append(Uri.EscapeDataString("per_page") + "=")
+          .Append(Uri.EscapeDataString(ConvertToString(perPage,
+            CultureInfo.InvariantCulture))).Append("&");
+      }
+
+      urlBuilder.Length--;
+
+      using (var request = new HttpRequestMessage()) {
+        request.Method = new HttpMethod("GET");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        var disposeResponse = true;
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup[]>(
+                response, headers, cancellationToken).ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          if (disposeResponse)
+            response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Create a page access group
+    /// </summary>
+    /// <remarks>
+    /// Create a page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
     /// <param name="body"></param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Add a page access user</returns>
+    /// <returns>Create a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PostPageAccessUsers(string pageId, PostPageAccessUser body,
+    public virtual async Task<PageAccessGroup> PostPageAccessGroups(string pageId, PostPageAccessGroup body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
@@ -33,7 +152,7 @@ namespace StatusPageIoApi {
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users");
+        .Append("/pages/{page_id}/page_access_groups");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
@@ -55,13 +174,15 @@ namespace StatusPageIoApi {
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          foreach (var item in response.Content.Headers)
-            headers[item.Key] = item.Value;
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
 
           var status = (int) response.StatusCode;
-          if (status == 200) {
+          if (status == 201) {
             var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -118,19 +239,6 @@ namespace StatusPageIoApi {
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
               objectResponse.Text, headers, objectResponse.Object, null);
           }
-          else if (status == 409) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>(
-              "The request could not be processed due to a conflict in resource state.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
           else if (status == 422) {
             var objectResponse =
               await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
@@ -144,7 +252,9 @@ namespace StatusPageIoApi {
               headers, objectResponse.Object, null);
           }
           else {
-            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -156,255 +266,37 @@ namespace StatusPageIoApi {
       }
     }
 
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Get a list of page access users
+    /// Get a page access group
     /// </summary>
     /// <remarks>
-    /// Get a list of page access users
+    /// Get a page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
-    /// <param name="email">Email address to search for</param>
-    /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <returns>Get a list of page access users</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser[]>
-      GetPageAccessUsers(string pageId, string email, int? page, int? perPage,
-        CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users?");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      if (email != null) {
-        urlBuilder.Append(Uri.EscapeDataString("email") + "=")
-          .Append(Uri.EscapeDataString(ConvertToString(email,
-            CultureInfo.InvariantCulture))).Append("&");
-      }
-
-      if (page != null) {
-        urlBuilder.Append(Uri.EscapeDataString("page") + "=")
-          .Append(Uri.EscapeDataString(ConvertToString(page,
-            CultureInfo.InvariantCulture))).Append("&");
-      }
-
-      if (perPage != null) {
-        urlBuilder.Append(Uri.EscapeDataString("per_page") + "=")
-          .Append(Uri.EscapeDataString(ConvertToString(perPage,
-            CultureInfo.InvariantCulture))).Append("&");
-      }
-
-      urlBuilder.Length--;
-
-      using (var request = new HttpRequestMessage()) {
-        request.Method = new HttpMethod("GET");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        var disposeResponse = true;
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          foreach (var item in response.Content.Headers)
-            headers[item.Key] = item.Value;
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser[]>(
-                response, headers, cancellationToken).ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          if (disposeResponse)
-            response.Dispose();
-        }
-      }
-    }
-
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <summary>
-    /// Update page access user
-    /// </summary>
-    /// <remarks>
-    /// Update page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <returns>Update page access user</returns>
+    /// <returns>Get a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser>
-      PatchPageAccessUser(string pageId, string pageAccessUserId,
-        CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        request.Content =
-          new StringContent(string.Empty, Encoding.UTF8, "application/json");
-        request.Method = new HttpMethod("PATCH");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          foreach (var item in response.Content.Headers)
-            headers[item.Key] = item.Value;
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse = await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-              .ConfigureAwait(false);
-            return objectResponse.Object ?? throw new ApiException("Response was null which was not expected.", status,
-              objectResponse.Text, headers, null);
-          }
-          else if (status == 401) {
-            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-              .ConfigureAwait(false);
-            if (objectResponse.Object == null)
-              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers,
-                null);
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-              .ConfigureAwait(false);
-            if (objectResponse.Object == null)
-              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers,
-                null);
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse = await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-              .ConfigureAwait(false);
-            if (objectResponse.Object == null)
-              throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers,
-                null);
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <summary>
-    /// Update page access user
-    /// </summary>
-    /// <remarks>
-    /// Update page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <returns>Update page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PutPageAccessUser(string pageId, string pageAccessUserId,
+    public virtual async Task<PageAccessGroup> GetPageAccessGroup(string pageId, string pageAccessGroupId,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}");
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        request.Content =
-          new StringContent(string.Empty, Encoding.UTF8, "application/json");
-        request.Method = new HttpMethod("PUT");
+        request.Method = new HttpMethod("GET");
 
         var url = urlBuilder.ToString();
         request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
@@ -423,7 +315,7 @@ namespace StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -483,33 +375,269 @@ namespace StatusPageIoApi {
       }
     }
 
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Delete page access user
+    /// Update a page access group
     /// </summary>
     /// <remarks>
-    /// Delete page access user
+    /// Update a page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <returns>Delete page access user</returns>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Update a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task DeletePageAccessUser(
-      string pageId, string pageAccessUserId, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<PageAccessGroup> PatchPageAccessGroup(string pageId, string pageAccessGroupId,
+      PatchPageAccessGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}");
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
+          CultureInfo.InvariantCulture)));
+
+      using (var request = new HttpRequestMessage()) {
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("PATCH");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Update a page access group
+    /// </summary>
+    /// <remarks>
+    /// Update a page access group
+    /// </remarks>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Update a page access group</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup> PutPageAccessGroup(string pageId, string pageAccessGroupId,
+      PutPageAccessGroup body, CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
+          CultureInfo.InvariantCulture)));
+
+      using (var request = new HttpRequestMessage()) {
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("PUT");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Remove a page access group
+    /// </summary>
+    /// <remarks>
+    /// Remove a page access group
+    /// </remarks>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Remove a page access group</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup> DeletePageAccessGroup(string pageId, string pageAccessGroupId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
@@ -530,7 +658,16 @@ namespace StatusPageIoApi {
           }
 
           var status = (int) response.StatusCode;
-          if (status == 204) {
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
           }
           else if (status == 401) {
             var objectResponse =
@@ -583,37 +720,47 @@ namespace StatusPageIoApi {
       }
     }
 
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Get page access user
+    /// Add components to page access group
     /// </summary>
     /// <remarks>
-    /// Get page access user
+    /// Add components to page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <returns>Get page access user</returns>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Add components to page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> GetPageAccessUser(string pageId, string pageAccessUserId,
+    public virtual async Task<PageAccessGroup> PatchPageAccessGroupComponents(string pageId, string pageAccessGroupId,
+      EditComponentIds body,
       CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}");
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
           CultureInfo.InvariantCulture)));
 
       using (var request = new HttpRequestMessage()) {
-        request.Method = new HttpMethod("GET");
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("PATCH");
 
         var url = urlBuilder.ToString();
         request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
@@ -632,7 +779,361 @@ namespace StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Add components to page access group
+    /// </summary>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body">List of Component identifiers</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Add components to page access group</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup> PutPageAccessGroupComponents(string pageId, string pageAccessGroupId,
+      EditComponentIds body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
+          CultureInfo.InvariantCulture)));
+
+      using (var request = new HttpRequestMessage()) {
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("PUT");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Replace components for a page access group
+    /// </summary>
+    /// <remarks>
+    /// Replace components for a page access group
+    /// </remarks>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Replace components for a page access group</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup> PostPageAccessGroupComponents(string pageId, string pageAccessGroupId,
+      EditComponentIds body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
+          CultureInfo.InvariantCulture)));
+
+      using (var request = new HttpRequestMessage()) {
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("POST");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 201) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            return objectResponse.Object;
+          }
+          else if (status == 401) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
+              headers, objectResponse.Object, null);
+          }
+          else if (status == 403) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
+              status, objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else if (status == 404) {
+            var objectResponse =
+              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
+                .ConfigureAwait(false);
+            if (objectResponse.Object == null) {
+              throw new ApiException("Response was null which was not expected.", status,
+                objectResponse.Text, headers, null);
+            }
+
+            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
+              objectResponse.Text, headers, objectResponse.Object, null);
+          }
+          else {
+            var responseData = response.Content == null
+              ? null
+              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new ApiException(
+              "The HTTP status code of the response was not expected (" + status + ").", status,
+              responseData, headers, null);
+          }
+        }
+        finally {
+          response.Dispose();
+        }
+      }
+    }
+
+    /// <summary>
+    /// Delete components for a page access group
+    /// </summary>
+    /// <remarks>
+    /// Delete components for a page access group
+    /// </remarks>
+    /// <param name="pageId">Page identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
+    /// <param name="body">List of components codes to remove.  If omitted, all components will be removed.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>Delete components for a page access group</returns>
+    /// <exception cref="ApiException">A server side error occurred.</exception>
+    public virtual async Task<PageAccessGroup> DeletePageAccessGroupComponents(string pageId, string pageAccessGroupId,
+      EditComponentIds body,
+      CancellationToken cancellationToken = default(CancellationToken)) {
+      if (pageId == null)
+        throw new ArgumentNullException(nameof(pageId));
+
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
+
+      if (body == null)
+        throw new ArgumentNullException(nameof(body));
+
+      var urlBuilder = new StringBuilder();
+      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components");
+      urlBuilder.Replace("{page_id}",
+        Uri.EscapeDataString(ConvertToString(pageId,
+          CultureInfo.InvariantCulture)));
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
+          CultureInfo.InvariantCulture)));
+
+      using (var request = new HttpRequestMessage()) {
+        var json = JsonConvert.SerializeObject(body, jsonSettings);
+        var content = new StringContent(json);
+        content.Headers.ContentType =
+          MediaTypeHeaderValue.Parse("application/json");
+        request.Content = content;
+        request.Method = new HttpMethod("DELETE");
+
+        var url = urlBuilder.ToString();
+        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+        var response = await httpClient.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+          .ConfigureAwait(false);
+        try {
+          var headers =
+            response.Headers.ToDictionary(h => h.Key, h => h.Value);
+          if (response.Content?.Headers != null) {
+            foreach (var item in response.Content.Headers)
+              headers[item.Key] = item.Value;
+          }
+
+          var status = (int) response.StatusCode;
+          if (status == 200) {
+            var objectResponse =
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -694,33 +1195,33 @@ namespace StatusPageIoApi {
 
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Get components for page access user
+    /// List components for a page access group
     /// </summary>
     /// <remarks>
-    /// Get components for page access user
+    /// List components for a page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
     /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
     /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <returns>Get components for page access user</returns>
+    /// <returns>List components for a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Component[]> GetPageAccessUserComponents(string pageId, string pageAccessUserId,
+    public virtual async Task<Component[]> GetPageAccessGroupComponents(string pageId, string pageAccessGroupId,
       int? page = null, int? perPage = null, CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components?");
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components?");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
           CultureInfo.InvariantCulture)));
       if (page != null) {
         urlBuilder.Append(Uri.EscapeDataString("page") + "=")
@@ -745,14 +1246,11 @@ namespace StatusPageIoApi {
         var response = await httpClient.SendAsync(request,
             HttpCompletionOption.ResponseHeadersRead, cancellationToken)
           .ConfigureAwait(false);
-        var disposeResponse = true;
         try {
           var headers =
             response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
+          foreach (var item in response.Content.Headers)
+            headers[item.Key] = item.Value;
 
           var status = (int) response.StatusCode;
           if (status == 200) {
@@ -803,487 +1301,7 @@ namespace StatusPageIoApi {
               objectResponse.Text, headers, objectResponse.Object, null);
           }
           else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          if (disposeResponse)
-            response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Add components for page access user
-    /// </summary>
-    /// <remarks>
-    /// Add components for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Add components for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PatchPageAccessUserComponents(string pageId, string pageAccessUserId,
-      EditComponentIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("PATCH");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Add components for page access user
-    /// </summary>
-    /// <remarks>
-    /// Add components for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body">List of component codes to allow access to</param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Add components for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PutPageAccessUserComponents(string pageId, string pageAccessUserId,
-      EditComponentIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("PUT");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Replace components for page access user
-    /// </summary>
-    /// <remarks>
-    /// Replace components for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Replace components for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser>
-      PostPageAccessUserComponents(string pageId, string pageAccessUserId,
-        EditComponentIds body,
-        CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("POST");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 201) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Remove components for page access user
-    /// </summary>
-    /// <remarks>
-    /// Remove components for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body">List of components codes to remove.  If omitted, all components will be removed.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Remove components for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> DeletePageAccessUserComponents(string pageId, string pageAccessUserId,
-      EditComponentIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("DELETE");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new ApiException(
               "The HTTP status code of the response was not expected (" + status + ").", status,
               responseData, headers, null);
@@ -1297,35 +1315,36 @@ namespace StatusPageIoApi {
 
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>
-    /// Remove component for page access user
+    /// Remove a component from a page access group
     /// </summary>
     /// <remarks>
-    /// Remove component for page access user
+    /// Remove a component from a page access group
     /// </remarks>
     /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
+    /// <param name="pageAccessGroupId">Page Access Group Identifier</param>
     /// <param name="componentId">Component identifier</param>
-    /// <returns>Remove component for page access user</returns>
+    /// <returns>Remove a component from a page access group</returns>
     /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> DeletePageAccessUserComponent(string pageId, string pageAccessUserId,
-      string componentId, CancellationToken cancellationToken = default(CancellationToken)) {
+    public virtual async Task<PageAccessGroup> DeletePageAccessGroupComponent(string pageId, string pageAccessGroupId,
+      string componentId,
+      CancellationToken cancellationToken = default(CancellationToken)) {
       if (pageId == null)
         throw new ArgumentNullException(nameof(pageId));
 
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
+      if (pageAccessGroupId == null)
+        throw new ArgumentNullException(nameof(pageAccessGroupId));
 
       if (componentId == null)
         throw new ArgumentNullException(nameof(componentId));
 
       var urlBuilder = new StringBuilder();
       urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/components/{component_id}");
+        .Append("/pages/{page_id}/page_access_groups/{page_access_group_id}/components/{component_id}");
       urlBuilder.Replace("{page_id}",
         Uri.EscapeDataString(ConvertToString(pageId,
           CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
+      urlBuilder.Replace("{page_access_group_id}",
+        Uri.EscapeDataString(ConvertToString(pageAccessGroupId,
           CultureInfo.InvariantCulture)));
       urlBuilder.Replace("{component_id}",
         Uri.EscapeDataString(ConvertToString(componentId,
@@ -1351,7 +1370,7 @@ namespace StatusPageIoApi {
           var status = (int) response.StatusCode;
           if (status == 200) {
             var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
+              await ReadObjectResponseAsync<PageAccessGroup>(response, headers, cancellationToken)
                 .ConfigureAwait(false);
             if (objectResponse.Object == null) {
               throw new ApiException("Response was null which was not expected.", status,
@@ -1395,688 +1414,6 @@ namespace StatusPageIoApi {
 
             throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
               objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Get metrics for page access user
-    /// </summary>
-    /// <remarks>
-    /// Get metrics for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="page">Page offset to fetch. Beginning February 28, 2023, this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="perPage">Number of results to return per page. Beginning February 28, 2023, a default and maximum limit of 100 will be imposed and this endpoint will return paginated data even if this query parameter is not provided.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Get metrics for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<Metric[]> GetPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      int? page = null, int? perPage = null, CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics?");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-      if (page != null) {
-        urlBuilder.Append(Uri.EscapeDataString("page") + "=")
-          .Append(Uri.EscapeDataString(ConvertToString(page,
-            CultureInfo.InvariantCulture))).Append("&");
-      }
-
-      if (perPage != null) {
-        urlBuilder.Append(Uri.EscapeDataString("per_page") + "=")
-          .Append(Uri.EscapeDataString(ConvertToString(perPage,
-            CultureInfo.InvariantCulture))).Append("&");
-      }
-
-      urlBuilder.Length--;
-
-      using (var request = new HttpRequestMessage()) {
-        request.Method = new HttpMethod("GET");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        var disposeResponse = true;
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<Metric[]>(response,
-                headers, cancellationToken).ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          if (disposeResponse)
-            response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Add metrics for page access user
-    /// </summary>
-    /// <remarks>
-    /// Add metrics for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Add metrics for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PatchPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      EditMetricIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("PATCH");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Add metrics for page access user
-    /// </summary>
-    /// <remarks>
-    /// Add metrics for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body">List of metrics to add</param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Add metrics for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PutPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      EditMetricIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("PUT");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Replace metrics for page access user
-    /// </summary>
-    /// <remarks>
-    /// Replace metrics for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Replace metrics for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> PostPageAccessUserMetrics(string pageId, string pageAccessUserId,
-      EditMetricIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("POST");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 201) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Delete metrics for page access user
-    /// </summary>
-    /// <remarks>
-    /// Delete metrics for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="body"></param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Delete metrics for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> DeletePageAccessUserMetrics(string pageId, string pageAccessUserId,
-      EditMetricIds body,
-      CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (body == null)
-        throw new ArgumentNullException(nameof(body));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        var json = JsonConvert.SerializeObject(body, jsonSettings);
-        var content = new StringContent(json);
-        content.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-        request.Content = content;
-        request.Method = new HttpMethod("DELETE");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
-          }
-          else if (status == 401) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("Could not authenticate", status, objectResponse.Text,
-              headers, objectResponse.Object, null);
-          }
-          else if (status == 403) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("You are not authorized to access this resource.",
-              status, objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else if (status == 404) {
-            var objectResponse =
-              await ReadObjectResponseAsync<ErrorEntity>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            throw new ApiException<ErrorEntity>("The requested resource could not be found.", status,
-              objectResponse.Text, headers, objectResponse.Object, null);
-          }
-          else {
-            var responseData = response.Content == null
-              ? null
-              : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new ApiException(
-              "The HTTP status code of the response was not expected (" + status + ").", status,
-              responseData, headers, null);
-          }
-        }
-        finally {
-          response.Dispose();
-        }
-      }
-    }
-
-    /// <summary>
-    /// Delete metric for page access user
-    /// </summary>
-    /// <remarks>
-    /// Delete metric for page access user
-    /// </remarks>
-    /// <param name="pageId">Page identifier</param>
-    /// <param name="pageAccessUserId">Page Access User Identifier</param>
-    /// <param name="metricId">Identifier of metric requested</param>
-    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-    /// <returns>Delete metric for page access user</returns>
-    /// <exception cref="ApiException">A server side error occurred.</exception>
-    public virtual async Task<PageAccessUser> DeletePageAccessUserMetric(string pageId, string pageAccessUserId,
-      string metricId, CancellationToken cancellationToken = default(CancellationToken)) {
-      if (pageId == null)
-        throw new ArgumentNullException(nameof(pageId));
-
-      if (pageAccessUserId == null)
-        throw new ArgumentNullException(nameof(pageAccessUserId));
-
-      if (metricId == null)
-        throw new ArgumentNullException(nameof(metricId));
-
-      var urlBuilder = new StringBuilder();
-      urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "")
-        .Append("/pages/{page_id}/page_access_users/{page_access_user_id}/metrics/{metric_id}");
-      urlBuilder.Replace("{page_id}",
-        Uri.EscapeDataString(ConvertToString(pageId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{page_access_user_id}",
-        Uri.EscapeDataString(ConvertToString(pageAccessUserId,
-          CultureInfo.InvariantCulture)));
-      urlBuilder.Replace("{metric_id}",
-        Uri.EscapeDataString(ConvertToString(metricId,
-          CultureInfo.InvariantCulture)));
-
-      using (var request = new HttpRequestMessage()) {
-        request.Method = new HttpMethod("DELETE");
-
-        var url = urlBuilder.ToString();
-        request.RequestUri = new Uri(url, UriKind.RelativeOrAbsolute);
-
-        var response = await httpClient.SendAsync(request,
-            HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-          .ConfigureAwait(false);
-        try {
-          var headers =
-            response.Headers.ToDictionary(h => h.Key, h => h.Value);
-          if (response.Content?.Headers != null) {
-            foreach (var item in response.Content.Headers)
-              headers[item.Key] = item.Value;
-          }
-
-          var status = (int) response.StatusCode;
-          if (status == 200) {
-            var objectResponse =
-              await ReadObjectResponseAsync<PageAccessUser>(response, headers, cancellationToken)
-                .ConfigureAwait(false);
-            if (objectResponse.Object == null) {
-              throw new ApiException("Response was null which was not expected.", status,
-                objectResponse.Text, headers, null);
-            }
-
-            return objectResponse.Object;
           }
           else {
             var responseData = response.Content == null

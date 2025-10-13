@@ -14,7 +14,7 @@
 **Sample code**
 ```c#
 string apiKey = <your-api-key>;
-StatusPageIoApi apiClient = new StatusPageIoApi(apiKey);
+StatusPageIoApi.ApiClient apiClient = new StatusPageIoApi.ApiClient(apiKey);
 
 Page[] pages = await apiClient.GetPages(cancellationToken);
 foreach (Page page in pages) {

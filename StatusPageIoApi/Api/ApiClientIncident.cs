@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace StatusPageIoApi {
 
-  public partial class StatusPageIoApi {
+  public partial class ApiClient {
 
     /// <summary>
     /// Create a template

@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>SergiyE.StatusPageIoApi</AssemblyName>
-    <AssemblyVersion>1.0.8</AssemblyVersion>
+    <AssemblyVersion>1.0.9</AssemblyVersion>
     <AssemblyTitle>StatusPageIoApi</AssemblyTitle>
     <AssemblyProduct>StatusPageIoApi</AssemblyProduct>
     <AssemblyCompany>SergiyE</AssemblyCompany>

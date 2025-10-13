@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace StatusPageIoApi {
 
-  public partial class StatusPageIoApi {
+  public partial class ApiClient {
 
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <summary>

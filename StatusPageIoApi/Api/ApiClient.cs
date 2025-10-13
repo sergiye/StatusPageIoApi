@@ -14,12 +14,12 @@ using Newtonsoft.Json.Serialization;
 
 namespace StatusPageIoApi {
 
-  public partial class StatusPageIoApi {
+  public partial class ApiClient {
     
     private readonly HttpClient httpClient;
     private readonly JsonSerializerSettings jsonSettings;
 
-    public StatusPageIoApi(string apiKey) {
+    public ApiClient(string apiKey) {
       httpClient = new HttpClient();
       httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("OAuth", apiKey);
       httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
