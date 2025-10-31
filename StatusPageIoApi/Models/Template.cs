@@ -8,21 +8,18 @@ namespace StatusPageIoApi {
     /// Name of the template, as shown in the list on the "Templates" tab of the "Incidents" page
     /// </summary>
     [JsonProperty("name", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Name { get; set; }
 
     /// <summary>
     /// Title to be applied to the incident or maintenance when selecting this template
     /// </summary>
     [JsonProperty("title", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Title { get; set; }
 
     /// <summary>
     /// The initial message, created as the first incident or maintenance update.
     /// </summary>
     [JsonProperty("body", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Body { get; set; }
 
     /// <summary>

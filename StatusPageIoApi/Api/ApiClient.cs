@@ -14,7 +14,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace StatusPageIoApi {
 
-  public partial class ApiClient {
+  public partial class ApiClient: IDisposable {
     
     private readonly HttpClient httpClient;
     private readonly JsonSerializerSettings jsonSettings;
@@ -34,6 +34,10 @@ namespace StatusPageIoApi {
     }
 
     private string BaseUrl { get; set; } = "https://api.statuspage.io/v1";
+
+    public void Dispose() {
+      httpClient?.Dispose();
+    }
 
     /// <summary>
     /// Get status embed config settings

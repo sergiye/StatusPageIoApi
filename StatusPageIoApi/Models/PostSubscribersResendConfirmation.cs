@@ -10,7 +10,6 @@ namespace StatusPageIoApi {
     /// The array of subscriber codes to resend confirmations for, or "all" to resend confirmations to all subscribers. Only unconfirmed email subscribers will receive this notification.
     /// </summary>
     [JsonProperty("subscribers", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Subscribers { get; set; }
   }
 }

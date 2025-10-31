@@ -11,7 +11,6 @@ namespace StatusPageIoApi {
     /// The array of subscriber codes to unsubscribe (limited to 100), or "all" to unsubscribe all subscribers if the number of subscribers is less than 100.
     /// </summary>
     [JsonProperty("subscribers", Required = Required.Always)]
-    [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
     public string Subscribers { get; set; }
 
     /// <summary>
